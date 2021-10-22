@@ -160,6 +160,3 @@ for file in os.scandir(directory):
 combined_content = pandas.concat([pandas.read_csv(filename) for filename in filenames_list])
 # create a csv file with the combined content
 combined_content.to_csv("url_id_file.csv", index=False)
-
-# https://geoportal.geoportal-th.de/gaialight-th/_apps/dladownload/download.php?type=op&id=273197&log=202004-32676_5639
-# https://geoportal.geoportal-th.de/gaialight-th/_apps/dladownload/download.php?type=op&id=
