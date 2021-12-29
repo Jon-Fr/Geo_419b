@@ -62,8 +62,7 @@ def data_download(type_to_download, data_list_to_download, url_year="", year=0, 
         if type_to_download == "meta_data" or type_to_download == "auxiliary_data":
             data_year = ""
             if i == "url_id_data":
-                url = "https://raw.githubusercontent.com/Jon-Fr/Geo_419b/main/url_id_file.zip?" \
-                      "token=ANQNA6FKVVNAP2QNEVLIINTBP7BGW"
+                url = "https://raw.githubusercontent.com/Jon-Fr/Geo_419b/main/url_id_file.zip?token=ANQNA6BD4FASPUKZQHEZHLTBZRCMQ"
                 file_name = "url_id_file.csv"
             else:
                 url = """https://geoportal.geoportal-th.de/hoehendaten/Uebersichten/Stand_{}.zip""".format(url_year)
