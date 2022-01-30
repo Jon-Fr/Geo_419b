@@ -2,7 +2,7 @@
 This program is intended for the automatic download of elevation data and orthophotos from [Geoportal-Th.de][1].
 
 ## Installation
-The following section describes the installation of the program. Once for the case that [Anaconda][2] is used and if this it is not the case.
+The following section describes the installation of the program. Firstly, in case [Anaconda][2] is used and secondly, if it is not.
 
 #### With Anaconda
 If you use anaconda you can use the enviroment.yml file to set up an environment in which the script can be used. 
@@ -16,6 +16,8 @@ conda env create -f environment.yml
 ```
 If you want to change the name of the environment you have to do it in the .yml file.
 Additional information about setting up environments using .yml files can be found [here][3].
+
+After you have set up the environment like this, it should be possible to use the script within it without any further action.
 
 #### Without Anaconda
 
