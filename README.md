@@ -19,7 +19,7 @@ If you want to change the name of the environment you have to do it in the .yml 
 Additional information about setting up environments using .yml files can be found [here][3].
 
 After you have set up the environment like this, it should be possible to use the script within it without any further action.
-```
+
 #### Without Anaconda
 If you do not use Anaconda, you will have to manually install the packages that are imported at the beginning of the script.
 If you are not sure which version of a package to install and which Python version is appropriate, you can check the .yml file.
