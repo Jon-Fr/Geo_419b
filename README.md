@@ -15,6 +15,7 @@ cd "Path of the repository folder"
 conda env create -f environment.yml
 ```
 If you want to change the name of the environment you have to do it in the .yml file.
+
 Additional information about setting up environments using .yml files can be found [here][3].
 
 After you have set up the environment like this, it should be possible to use the script within it without any further action.
