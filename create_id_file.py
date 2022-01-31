@@ -75,7 +75,7 @@ for i1 in range("start", "stop", "number_of_requests"):
     # run framework function
     hcd__url_re_list, url_key_error_re_list = asyncio.run(main(start=i1, stop=i1+100))
     # cause the urls are sometimes not reachable for a short time
-    # Every url that is unreachable  is checked for a second an if necessary even a third time
+    # every url that is unreachable  is checked for a second an if necessary even a third time
     for i2 in range(0, 2):
         if len(url_key_error_re_list) > 0:
             # create list of error url ids
