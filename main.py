@@ -4,6 +4,7 @@ import requests
 import zipfile
 import geopandas
 import pandas
+from osgeo import gdal
 
 
 def load_shapefile(shp_fp):
@@ -488,26 +489,104 @@ def get_relevant_url_ids(url_id_df, tile_number_df, start_year, end_year):
     return url_id_list, year_list, tile_number_list, partly_data_list
 
 
+class GeoFile:
+    def __init__(self, file, extent):
+        self.file = file
+        self.extent = extent
+
+
+class GeoFileHandler:
+    def __init__(self, folder, geo_file_list):
+        self.folder = folder
+        self.geo_file_list = geo_file_list
+        full_extent = []
+        self.file_list = []
+        for i in range(len(geo_file_list)):
+            self.file_list.append(geo_file_list[i]["file"])
+            if i == 0:
+                full_extent = geo_file_list[i]["extent"]
+            else:
+                for key in [0, 1]:
+                    if geo_file_list[i]["extent"][key] < full_extent[key]:
+                        full_extent[key] = geo_file_list[i]["extent"][key]
+                for key in [2, 3]:
+                    if geo_file_list[i]["extent"][key] > full_extent[key]:
+                        full_extent[key] = geo_file_list[i]["extent"][key]
+        self.extent = full_extent
+
+    def create_vrt(self):
+        opts = gdal.BuildVRTOptions(outputBounds=self.extent)
+        vrt = gdal.BuildVRT(self.folder + "/dgm_mosaic.vrt", self.file_list, options=opts)
+        gdal.Translate(self.folder + "/dgm_mosaic.tif", vrt, format='GTiff',
+                       creationOptions=['COMPRESS:DEFLATE', 'TILED:YES'])
+
+
+def correct_all_dgm(dir, file_cor):
+    folder_list = os.listdir(dir)
+    geo_file_handler_list = []
+    for i1 in range(len(folder_list)):
+        file_list = os.listdir(dir + "/" + folder_list[i1])
+        out_file_list = []
+        for i2 in range(len(file_list)):
+            if file_list[i2].endswith(".xyz"):
+                out_file_list.append(dgm_correction(dir + "/" + folder_list[i1], file_list[i2], file_cor))
+        geo_file_handler_list.append(GeoFileHandler(dir + "/" + folder_list[i1], out_file_list))
+    return geo_file_handler_list
+
+
+def dgm_correction(dir, file_dgm, file_cor):
+    dgm_str = dir + "/" + file_dgm
+    out_file = dgm_str.replace(".xyz", "_UTM_cor.tif")
+    dgm = gdal.Open(dgm_str)
+    gt = dgm.GetGeoTransform()
+    x_size = dgm.RasterXSize
+    y_size = dgm.RasterYSize
+    extent = [gt[0], gt[3] + gt[5] * y_size,
+              gt[0] + gt[1] * x_size, gt[3]]
+    # [minX, minY, maxX, maxY]
+    cor_warp = gdal.Warp("",
+                         file_cor,
+                         dstSRS="EPSG: 25832",
+                         xRes=gt[1],
+                         yRes=gt[5],
+                         resampleAlg='bilinear',
+                         outputBounds=extent,
+                         format="vrt")
+    data_out = dgm.GetRasterBand(1).ReadAsArray() - cor_warp.GetRasterBand(1).ReadAsArray()
+    driver = gdal.GetDriverByName("GTiff")
+    ds_out = driver.Create(out_file, x_size, y_size, 1, gdal.GDT_UInt16)
+    ds_out.SetGeoTransform(cor_warp.GetGeoTransform())  # sets same geotransform as input
+    ds_out.SetProjection(cor_warp.GetProjection())  # sets same projection as input
+    band_out = ds_out.GetRasterBand(1)
+    band_out.WriteArray(data_out)
+    r_d = {"file": out_file, "extent": extent}
+    return r_d
+
+
 # main function
 def auto_download():
     # ---------- user input ---------- #
 
     # set working directory
-    os.chdir("C:/Users/frank/Desktop/Test")
+    os.chdir("D:/FabianHDD/Uni_Master/modulare Programmierung/dataB")
 
     # set aoi file path
-    aoi_fp = "C:/Users/frank/Desktop/Data/AOI_/AOI_07.shp"
+    aoi_fp = "D:/FabianHDD/Uni_Master/modulare Programmierung/" \
+             "clip.shp"
 
     # user request data
-    dgm = False
-    dom = False
-    las = False
+    dgm = True
+    dom = True
+    las = True
     ortho = True
 
+    # dgm_correction
+    dgm_cor = True
+    file_cor_dgm = "D:/FabianHDD/Uni_Master/modulare Programmierung/documentsB/GCG2016.tif"
+    merge_dgm = True
     # delete zip files
-    delete = False
+    delete = True
 
-    # user request year and month for the elevation data
     start_year = 2012
     month_start_year = 1
     end_year = 2016
@@ -630,6 +709,7 @@ def auto_download():
                     if elev_data_list != "no_new_data":
                         create_and_unzip(folder_path="elevation_data/dgm/" + str(year), zip_files=elev_data_list)
                         zip_files_to_delete.extend(elev_data_list)
+
                 if dom is True:
                     elev_data_list = data_download(type_to_download="dom", url_year=url_year, year=year,
                                                    data_list_to_download=elev_download_list, dem_n=dem_n)
@@ -724,6 +804,11 @@ def auto_download():
 
     # ---------- both ---------- #
     # if it is wanted delete the zip files
+    if dgm_cor is True:
+        geo_file_handler_list = correct_all_dgm("./elevation_data/dgm", file_cor_dgm)
+        if merge_dgm is True:
+            for i in range(len(geo_file_handler_list)):
+                geo_file_handler_list[i].create_vrt()
     if delete:
         delete_zip_files(zip_files=zip_files_to_delete)
 
