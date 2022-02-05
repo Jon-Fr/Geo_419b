@@ -5,7 +5,7 @@ This program is intended for the automatic download of elevation data and orthop
 The following section describes the installation of the program. Firstly, in case [Anaconda][2] is used and secondly, if it is not.
 
 #### With Anaconda
-If you use anaconda you can use the enviroment.yml file to set up an environment in which the manin script can be used. 
+If you use anaconda you can use the enviroment.yml file to set up an environment in which the main and aux script can be used. 
 
 Start by cloning this repository to your local system.
 
@@ -18,10 +18,10 @@ If you want to change the name of the environment, you must do so in the environ
 
 Additional information about setting up environments using environment.yml files can be found [here][3].
 
-After you have set up the environment like this, it should be possible to use the main script within it without any further action.
+After you have set up the environment like this, it should be possible to use the main and aux script within it without any further action.
 
 #### Without Anaconda
-If you do not use Anaconda, you will have to manually install the packages that are imported at the beginning of the main script.
+If you do not use Anaconda, you will have to manually install the packages that are imported at the beginning of the main and aux script.
 If you are not sure which version of a package to install and which Python version is appropriate, you can check the environment.yml file.
 
 ## Documentation
