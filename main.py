@@ -490,7 +490,40 @@ def get_relevant_url_ids(url_id_df, tile_number_df, start_year, end_year):
 
 
 class GeoFileHandler:
+    """
+    class to represent a folder with geo-files
+
+    Attributes:
+    -------
+    path: str
+        path of the directory which contains the folder
+    folder_name: str
+        name of the folder
+    geo_file_list: list of dict
+        a list of dict of {str, array[int]} which contains the absolute path and
+        extension [minX, minY, maxX, maxY] of a geo-file
+    file_list: list of str
+        list of absolute paths of all files created from geo_file_list because
+        its needed gdal.BuildVRT() in method create_vrt
+    extension: array of int
+        array with [minX, minY, maxX, maxY] for all files
+    Methods
+    -------
+    create_vrt ( name, epsg="EPSG: 25832")
+        creates a raster-mosaic using gdal.BuildVRT and export as GeoTiff in choosable crs
+    """
     def __init__(self, path, folder_name, geo_file_list):
+        """
+        Construct all necessary attributes for the objects.
+        Calculates the the extension of all rasters for the raster mosaic
+        path: str
+            path of the directory with the folder
+        folder_name: str
+            name of the folder
+        geo_file_list: list of dict
+            a list of dict of {str, array[int]} which contains the absolute path and
+            extension [minX, minY, maxX, maxY] of a geo-file
+        """
         self.folder = path + "/" + folder_name
         self.name = folder_name
         self.geo_file_list = geo_file_list
@@ -498,6 +531,7 @@ class GeoFileHandler:
         self.file_list = []
         for i in range(len(geo_file_list)):
             self.file_list.append(geo_file_list[i]["file"])
+            # needed for gdal.BuildVRT() in method create_vrt
             if i == 0:
                 full_extent = geo_file_list[i]["extent"]
             else:
@@ -509,14 +543,47 @@ class GeoFileHandler:
                         full_extent[key] = geo_file_list[i]["extent"][key]
         self.extent = full_extent
 
-    def create_vrt(self, name):
+    def create_vrt(self, name, epsg="EPSG: 25832"):
+        """
+        creates a raster-mosaic using gdal.BuildVRT and export as GeoTiff in choosable crs
+
+        Parameter
+        ----------
+        name: str
+            name of the GeoTiff
+        epsg: str
+            EPSG-code of chosen crs
+
+        Returns
+        -------
+        """
         opts = gdal.BuildVRTOptions(outputBounds=self.extent)
         vrt = gdal.BuildVRT(self.folder + "/"+name+".vrt", self.file_list, options=opts)
-        gdal.Translate(self.folder + "/"+name+".tif", vrt, format='GTiff',
+        vrt_warped = gdal.Warp("", vrt, dstSRS=epsg, format='vrt')
+        gdal.Translate(self.folder + "/"+name+".tif", vrt_warped, format='GTiff',
                        creationOptions=['COMPRESS:DEFLATE', 'TILED:YES'])
 
 
-def go_through_all_raster(dir, ending, file_dgm_cor=None):
+def go_through_all_raster(dir, ending, file_cor=None):
+    """
+    go through all raster of path including subfolders. Calling the function raster_correction (file_cor given)
+    or create_geo_file_dic (no file_cor given) to get the a dictionary with file end extent. For each subfolder
+    an instance of the class GeoFileHandler is created. All Objects of GeoFileHandler are returned as a liust.
+
+    Parameter
+    ----------
+    dir: str
+        directory with subfolders, witch contains all raster datasets
+    ending: str
+        file extension of the raster dataset (f.e. .tif)
+    file_cor: str
+        path of a file for raster correction
+
+    Returns
+    -------
+    geo_file_handler_list: list of GeoFileHandler
+        list  with instances of GeoFileHandler for every subfolder
+    """
     folder_list = os.listdir(dir)
     geo_file_handler_list = []
     for i1 in range(len(folder_list)):
@@ -524,9 +591,8 @@ def go_through_all_raster(dir, ending, file_dgm_cor=None):
         out_file_list = []
         for i2 in range(len(file_list)):
             if file_list[i2].endswith(ending):
-                if file_dgm_cor is not None:
-                    out_file_list.append(
-                        raster_correction(dir + "/" + folder_list[i1], file_list[i2], file_dgm_cor, ending))
+                if file_cor is not None:
+                    out_file_list.append(raster_correction(dir + "/" + folder_list[i1], file_list[i2], file_cor, ending))
                 else:
                     out_file_list.append(create_geo_file_dic(dir + "/" + folder_list[i1], file_list[i2]))
         geo_file_handler_list.append(GeoFileHandler(dir, folder_list[i1], out_file_list))
@@ -534,6 +600,22 @@ def go_through_all_raster(dir, ending, file_dgm_cor=None):
 
 
 def create_geo_file_dic(dir, file):
+    """
+    calculate the geometric extension of a raster
+
+    Parameter
+    ----------
+    dir: str
+        directory
+    file: str
+        name of th file
+
+    Returns
+    -------
+    dict
+        dict of {str: array[int]} with the path as str and an array with the geometric extension with
+        the following values [minX, minY, maxX, maxY]
+    """
     raster_str = dir + "/" + file
     raster = gdal.Open(raster_str)
     gt = raster.GetGeoTransform()
@@ -545,6 +627,29 @@ def create_geo_file_dic(dir, file):
 
 
 def raster_correction(dir, file_raster, file_cor, ending, epsg="EPSG: 25832"):
+    """
+    corrects every raster value by addition with a second raster (correction file).
+    Writes the result as a new GeoTiff by replacing the original file extension with _UTM_cor.tif
+
+    Parameter
+    ----------
+    dir: str
+        directory
+    file_raster: str
+        name of the input raster
+    file_cor: str
+        path of the correction-raster-file
+    ending: str
+        file extension of the input raster
+    epsg: str, optional
+        EPSG-code of the input raster. just necessary if not EPSG: 25832
+
+    Returns
+    -------
+    dict
+        dict of {str: array[int]} with the path as str and an array with the geometric extension with
+        the following values [minX, minY, maxX, maxY] for the calculated raster
+    """
     raster_str = dir + "/" + file_raster
     out_file = raster_str.replace(ending, "_UTM_cor.tif")
     raster = gdal.Open(raster_str)
@@ -573,41 +678,19 @@ def raster_correction(dir, file_raster, file_cor, ending, epsg="EPSG: 25832"):
 
 
 # main function
-def auto_download():
+def auto_download(working_dir, path_shp, start_year, month_start_year, end_year, month_end_year,
+                  start_year_2, end_year_2, dgm=True, dom=True, las=True, ortho=True, file_cor_dgm=None,
+                  epsg_mosaic="EPSG: 25832", merge_dgm=True, merge_dom=True, merge_ortho=True, delete=True,):
     # ---------- user input ---------- #
 
     # set working directory
-    os.chdir("D:/FabianHDD/Uni_Master/modulare Programmierung/dataB")
+    os.chdir(working_dir)
 
     # set aoi file path
-    aoi_fp = "D:/FabianHDD/Uni_Master/modulare Programmierung/" \
-             "clip.shp"
-
-    # user request data
-    dgm = True
-    dom = True
-    las = True
-    ortho = True
-
-    # dgm_correction
-    dgm_cor = True
-    file_cor_dgm = "D:/FabianHDD/Uni_Master/modulare Programmierung/documentsB/GCG2016.tif"
-
-    # merge raster to mosaic
-    merge_dgm = True
-    merge_dom = True
-    merge_ortho = True
-    # delete zip files
-    delete = True
-
-    start_year = 2012
-    month_start_year = 1
-    end_year = 2016
-    month_end_year = 12
+    aoi_fp = path_shp
 
     # user request years for the image data
-    start_year_2 = 2019
-    end_year_2 = 2019
+
 
     # ---------- function ---------- #
     # ---------- both ---------- #
@@ -816,24 +899,24 @@ def auto_download():
                 index = index + 1
 
     # dgm correction and raster merging
-    if dgm_cor is True:
+    if file_cor_dgm is not None:
         geo_file_handler_list = go_through_all_raster("./elevation_data/dgm", ".xyz", file_cor_dgm)
         if merge_dgm is True:
             for i in range(len(geo_file_handler_list)):
-                geo_file_handler_list[i].create_vrt("dgm_mosaic_"+geo_file_handler_list[i].name)
+                geo_file_handler_list[i].create_vrt("dgm_mosaic_"+geo_file_handler_list[i].name, epsg_mosaic)
     else:
         if merge_dgm is True:
             geo_file_handler_list = go_through_all_raster("./elevation_data/dgm", ".xyz")
             for i in range(len(geo_file_handler_list)):
-                geo_file_handler_list[i].create_vrt("dgm_mosaic_"+geo_file_handler_list[i].name)
+                geo_file_handler_list[i].create_vrt("dgm_mosaic_"+geo_file_handler_list[i].name, epsg_mosaic)
     if merge_dom is True:
         geo_file_handler_list = go_through_all_raster("./elevation_data/dom", ".xyz")
         for i in range(len(geo_file_handler_list)):
-            geo_file_handler_list[i].create_vrt("dom_mosaic_"+geo_file_handler_list[i].name)
+            geo_file_handler_list[i].create_vrt("dom_mosaic_"+geo_file_handler_list[i].name, epsg_mosaic)
     if merge_ortho is True:
         geo_file_handler_list = go_through_all_raster("./image_data/orthophotos", ".tif")
         for i in range(len(geo_file_handler_list)):
-            geo_file_handler_list[i].create_vrt("ortho_mosaic_"+geo_file_handler_list[i].name)
+            geo_file_handler_list[i].create_vrt("ortho_mosaic_"+geo_file_handler_list[i].name, epsg_mosaic)
 
     # ---------- both ---------- #
     # if it is wanted delete the zip files
@@ -843,4 +926,8 @@ def auto_download():
 
 # test = auto_download()
 if __name__ == "__main__":
-    auto_download()
+    working_dir = "D:/FabianHDD/Uni_Master/modulare Programmierung/dataB"
+    shp="D:/FabianHDD/Uni_Master/modulare Programmierung/clip.shp"
+    file_cor_dgm = "D:/FabianHDD/Uni_Master/modulare Programmierung/documentsB/GCG2016.tif"
+
+    auto_download(working_dir, shp, 2012, 1, 2016, 12, 2019, 2019, file_cor_dgm= file_cor_dgm)
