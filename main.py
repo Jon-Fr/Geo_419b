@@ -533,12 +533,15 @@ class GeoFileHandler:
             self.file_list.append(geo_file_list[i]["file"])
             # needed for gdal.BuildVRT() in method create_vrt
             if i == 0:
+                # extent of first raster is full extent temporary
                 full_extent = geo_file_list[i]["extent"]
             else:
                 for key in [0, 1]:
+                    # if new minimum
                     if geo_file_list[i]["extent"][key] < full_extent[key]:
                         full_extent[key] = geo_file_list[i]["extent"][key]
                 for key in [2, 3]:
+                    # if new maximum
                     if geo_file_list[i]["extent"][key] > full_extent[key]:
                         full_extent[key] = geo_file_list[i]["extent"][key]
         self.extent = full_extent
@@ -557,9 +560,12 @@ class GeoFileHandler:
         Returns
         -------
         """
+        # build vrt
         opts = gdal.BuildVRTOptions(outputBounds=self.extent)
         vrt = gdal.BuildVRT(self.folder + "/"+name+".vrt", self.file_list, options=opts)
+        # warp in chosen crs
         vrt_warped = gdal.Warp("", vrt, dstSRS=epsg, format='vrt')
+        # write as GeoTiff
         gdal.Translate(self.folder + "/"+name+".tif", vrt_warped, format='GTiff',
                        creationOptions=['COMPRESS:DEFLATE', 'TILED:YES'])
 
@@ -587,9 +593,11 @@ def go_through_all_raster(dir, ending, file_cor=None):
     folder_list = os.listdir(dir)
     geo_file_handler_list = []
     for i1 in range(len(folder_list)):
+        # loop through every folder in directory
         file_list = os.listdir(dir + "/" + folder_list[i1])
         out_file_list = []
         for i2 in range(len(file_list)):
+            # loop through every subfolder in folder
             if file_list[i2].endswith(ending):
                 if file_cor is not None:
                     out_file_list.append(raster_correction(dir + "/" + folder_list[i1], file_list[i2], file_cor, ending))
@@ -652,13 +660,17 @@ def raster_correction(dir, file_raster, file_cor, ending, epsg="EPSG: 25832"):
     """
     raster_str = dir + "/" + file_raster
     out_file = raster_str.replace(ending, "_UTM_cor.tif")
+    # open raster
     raster = gdal.Open(raster_str)
     gt = raster.GetGeoTransform()
     x_size = raster.RasterXSize
     y_size = raster.RasterYSize
+    # calculate extension
     extent = [gt[0], gt[3] + gt[5] * y_size,
               gt[0] + gt[1] * x_size, gt[3]]
     # [minX, minY, maxX, maxY]
+
+    # warp correction, so that it matches the input raster in crs, extension and resolution
     cor_warp = gdal.Warp("",
                          file_cor,
                          dstSRS=epsg,
@@ -667,7 +679,9 @@ def raster_correction(dir, file_raster, file_cor, ending, epsg="EPSG: 25832"):
                          resampleAlg='bilinear',
                          outputBounds=extent,
                          format="vrt")
+    # correction
     data_out = raster.GetRasterBand(1).ReadAsArray() + cor_warp.GetRasterBand(1).ReadAsArray()
+    # driver for output
     driver = gdal.GetDriverByName("GTiff")
     ds_out = driver.Create(out_file, x_size, y_size, 1, gdal.GDT_UInt16)
     ds_out.SetGeoTransform(cor_warp.GetGeoTransform())  # sets same geotransform as input
