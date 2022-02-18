@@ -1,5 +1,5 @@
 # Geo_419b
-This program is intended for the automatic download of elevation data and orthophotos from [Geoportal-Th.de][1].
+This program is intended for the automatic download of elevation data and orthophotos from [Geoportal-Th.de][1]. In addition, it is able to perform an elevation correction of the digital terrain and surface models as well as to merge the raster grids of a year.
 
 ## Installation
 The following section describes the installation of the program. Firstly, in case [Anaconda][2] is used and secondly, if it is not.
