@@ -954,13 +954,3 @@ def auto_download(working_dir, path_shp, start_year_elev=None, month_start_year=
     # if it is wanted delete the zip files
     if delete is True:
         delete_zip_files(zip_files=zip_files_to_delete)
-
-
-if __name__ == "__main__":
-    user_working_dir = ""
-    user_shp = ""
-    user_file_cor_dgm = ""
-
-auto_download(working_dir="C:/working_dir/", path_shp="C:/in_data/clip.shp", start_year_elev=2014, end_year_elev=2019,
-              start_year_ortho=2014, end_year_ortho=2019, dgm=False, dom=False, las=False, merge_dgm=False,
-              merge_dom=False)
