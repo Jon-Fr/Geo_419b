@@ -30,7 +30,7 @@ release = "1.0.0"
 
 
 # -- General configuration ---------------------------------------------------
-autodoc_mock_imports = ["osgeo", "pandas", "geopandas", "request", "asyncio", "aiohttp", "tqdm"]
+autodoc_mock_imports = ["osgeo", "pandas", "geopandas", "request", "aiohttp", "tqdm"]
 
 needs_sphinx = "4.4.0"
 
