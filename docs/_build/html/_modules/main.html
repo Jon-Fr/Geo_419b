@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>main &mdash; Geo_419b 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Geo_419b
+          </a>
+              <div class="version">
+                1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../Geo_419b.html">Main documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Geo_419b.html#aux-documentation">_aux documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Geo_419b</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>main</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for main</h1><div class="highlight"><pre>
+<span></span><span class="c1"># import packages</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">zipfile</span>
+<span class="kn">import</span> <span class="nn">geopandas</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">from</span> <span class="nn">osgeo</span> <span class="kn">import</span> <span class="n">gdal</span>
+
+
+<div class="viewcode-block" id="set_elev_variables"><a class="viewcode-back" href="../Geo_419b.html#main.set_elev_variables">[docs]</a><span class="k">def</span> <span class="nf">set_elev_variables</span><span class="p">(</span><span class="n">year</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sets some variables that change depending on the specified year and returns them. However, if it is certain that</span>
+<span class="sd">    there is no data for the specified year &quot;stop&quot; is returned.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    year: int</span>
+<span class="sd">        The year of interest or one of the years ot interest.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    url_year: str</span>
+<span class="sd">        Part of the URL for the download of the elevation data.</span>
+<span class="sd">    dem_n: str</span>
+<span class="sd">        Part of the URL for the download of the elevation data.</span>
+<span class="sd">    elev_meta_file: str</span>
+<span class="sd">        Name of the meta data shapefile for the elevation data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># set the variables if there could be data available for this year</span>
+    <span class="k">if</span> <span class="mi">2011</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="mi">2013</span><span class="p">:</span>
+        <span class="n">url_year</span> <span class="o">=</span> <span class="s2">&quot;2010-2013&quot;</span>
+        <span class="n">dem_n</span> <span class="o">=</span> <span class="s2">&quot;2&quot;</span>
+        <span class="n">elev_meta_file</span> <span class="o">=</span> <span class="s2">&quot;DGM2_2010-2013_Erfass-lt-Meta_UTM32-UTM_2014-12-10.shp&quot;</span>
+    <span class="k">elif</span> <span class="mi">2014</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="mi">2019</span><span class="p">:</span>
+        <span class="n">url_year</span> <span class="o">=</span> <span class="s2">&quot;2014-2019&quot;</span>
+        <span class="n">dem_n</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+        <span class="n">elev_meta_file</span> <span class="o">=</span> <span class="s2">&quot;DGM1_2014-2019_Erfass-lt-Meta_UTM_2020-04-20--17127.shp&quot;</span>
+    <span class="k">elif</span> <span class="mi">2020</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="mi">2025</span><span class="p">:</span>
+        <span class="n">url_year</span> <span class="o">=</span> <span class="s2">&quot;2020-2025&quot;</span>
+        <span class="n">dem_n</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+        <span class="n">elev_meta_file</span> <span class="o">=</span> <span class="s2">&quot;DGM1_2020-2025_Erfass-lt-Meta_UTM_2021-03--17127/&quot;</span> \
+                         <span class="s2">&quot;DGM1_2020-2025_Erfass-lt-Meta_UTM_2021-03--17127.shp&quot;</span>
+    <span class="c1"># return stop if there is certainly no data available for this year</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;stop&quot;</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span>
+    <span class="c1"># return the defined variables</span>
+    <span class="k">return</span> <span class="n">url_year</span><span class="p">,</span> <span class="n">dem_n</span><span class="p">,</span> <span class="n">elev_meta_file</span></div>
+
+
+<div class="viewcode-block" id="data_download"><a class="viewcode-back" href="../Geo_419b.html#main.data_download">[docs]</a><span class="k">def</span> <span class="nf">data_download</span><span class="p">(</span><span class="n">type_to_download</span><span class="p">,</span> <span class="n">data_list_to_download</span><span class="p">,</span> <span class="n">url_year</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dem_n</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">year_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">tile_number_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loops trough a list of data to download puts the URL(s) together and download the ZIP file(s). A list with the</span>
+<span class="sd">    name(s) of the downloaded file(s) is returned, if no files were downloaded &quot;no_new_data&quot; is returned.</span>
+<span class="sd">    Files are only downloaded, if the file or the content of the file is not already in the working directory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type_to_download: str</span>
+<span class="sd">        The type of the data to be downloaded.</span>
+<span class="sd">    data_list_to_download: list of str</span>
+<span class="sd">        A list that contains the part of the URL that is different for each data tile for all data tiles to be</span>
+<span class="sd">        downloaded.</span>
+<span class="sd">    url_year: str</span>
+<span class="sd">        Part of the URL for the download of the elevation data</span>
+<span class="sd">    year: int</span>
+<span class="sd">        The year of interest or one of the years ot interest.</span>
+<span class="sd">    dem_n: str</span>
+<span class="sd">        Part of the URL for the download of the elevation data</span>
+<span class="sd">    year_list: list of int or None, default=None</span>
+<span class="sd">        A list which contains the year of capture of each orthophoto to be downloaded.</span>
+<span class="sd">    tile_number_list: list of str or None, default=None</span>
+<span class="sd">         A list which contains the tile number of each orthophoto to be downloaded.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    zip_data_list: list of str</span>
+<span class="sd">        A list with the name(s) of of the downloaded file(s).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># the two following variables are used for the naming of the zip files (data kind = dgm, dom or las)</span>
+    <span class="n">data_year</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+    <span class="n">data_kind</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="c1"># in this list the names of the zip files are stored</span>
+    <span class="n">zip_data_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># necessary for the orthophoto lists</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># for loop to download more than one file</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data_list_to_download</span><span class="p">:</span>
+        <span class="c1"># set the url, the one or two of the variables  used for the naming of the zip files and</span>
+        <span class="c1"># get the name of the zip file content and its hypothetically file path</span>
+        <span class="c1"># to be able to check if the file is  already present</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">hy_file_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;elevation_data/</span><span class="si">{}</span><span class="s2">/</span><span class="si">{}</span><span class="s2">/&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">type_to_download</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">))</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">file_name_part_1</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">file_name_part_2</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">type_to_download</span> <span class="o">==</span> <span class="s2">&quot;meta_data&quot;</span> <span class="ow">or</span> <span class="n">type_to_download</span> <span class="o">==</span> <span class="s2">&quot;auxiliary_data&quot;</span><span class="p">:</span>
+            <span class="n">data_year</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="s2">&quot;url_id_data&quot;</span><span class="p">:</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/Jon-Fr/Geo_419b/main/url_id_file.zip&quot;</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;url_id_file.csv&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;https://geoportal.geoportal-th.de/hoehendaten/Uebersichten/Stand_</span><span class="si">{}</span><span class="s2">.zip&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url_year</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">type_to_download</span> <span class="o">==</span> <span class="s2">&quot;auxiliary_data&quot;</span><span class="p">:</span>
+                <span class="n">hy_file_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;image_data/</span><span class="si">{}</span><span class="s2">/&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">type_to_download</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hy_file_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;elevation_data/</span><span class="si">{}</span><span class="s2">/&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">type_to_download</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">url_year</span> <span class="o">==</span> <span class="s2">&quot;2010-2013&quot;</span><span class="p">:</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;DGM2_2010-2013_Erfass-lt-Meta_UTM32-UTM_2014-12-10.shp&quot;</span>
+            <span class="k">elif</span> <span class="n">url_year</span> <span class="o">==</span> <span class="s2">&quot;2014-2019&quot;</span><span class="p">:</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;DGM1_2014-2019_Erfass-lt-Meta_UTM_2020-04-20--17127.shp&quot;</span>
+            <span class="k">elif</span> <span class="n">url_year</span> <span class="o">==</span> <span class="s2">&quot;2020-2025&quot;</span><span class="p">:</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;DGM1_2020-2025_Erfass-lt-Meta_UTM_2021-03--17127&quot;</span>
+        <span class="k">if</span> <span class="n">type_to_download</span> <span class="o">==</span> <span class="s2">&quot;dgm&quot;</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;https://geoportal.geoportal-th.de/hoehendaten/DGM/dgm_</span><span class="si">{}</span><span class="s2">/dgm</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_1_th_</span><span class="si">{}</span><span class="s2">.zip&quot;&quot;&quot;</span> \
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url_year</span><span class="p">,</span> <span class="n">dem_n</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">url_year</span><span class="p">)</span>
+            <span class="n">data_kind</span> <span class="o">=</span> <span class="s2">&quot;dgm_&quot;</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">32</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;xyz&quot;</span>
+            <span class="k">if</span> <span class="n">year</span> <span class="o">==</span> <span class="mi">2020</span><span class="p">:</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">35</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;xyz&quot;</span>
+        <span class="k">if</span> <span class="n">type_to_download</span> <span class="o">==</span> <span class="s2">&quot;dom&quot;</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;http://geoportal.geoportal-th.de/hoehendaten/DOM/dom_</span><span class="si">{}</span><span class="s2">/dom</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_1_th_</span><span class="si">{}</span><span class="s2">.zip&quot;&quot;&quot;</span> \
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url_year</span><span class="p">,</span> <span class="n">dem_n</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">url_year</span><span class="p">)</span>
+            <span class="n">data_kind</span> <span class="o">=</span> <span class="s2">&quot;dom_&quot;</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">32</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;xyz&quot;</span>
+            <span class="k">if</span> <span class="n">year</span> <span class="o">==</span> <span class="mi">2020</span><span class="p">:</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">35</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;xyz&quot;</span>
+        <span class="k">if</span> <span class="n">type_to_download</span> <span class="o">==</span> <span class="s2">&quot;las&quot;</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;http://geoportal.geoportal-th.de/hoehendaten/LAS/las_</span><span class="si">{}</span><span class="s2">/las_</span><span class="si">{}</span><span class="s2">_1_th_</span><span class="si">{}</span><span class="s2">.zip&quot;&quot;&quot;</span> \
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url_year</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">url_year</span><span class="p">)</span>
+            <span class="n">data_kind</span> <span class="o">=</span> <span class="s2">&quot;las_&quot;</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">32</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;laz&quot;</span>
+            <span class="k">if</span> <span class="n">year</span> <span class="o">==</span> <span class="mi">2020</span><span class="p">:</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">35</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;laz&quot;</span>
+        <span class="k">if</span> <span class="n">type_to_download</span> <span class="o">==</span> <span class="s2">&quot;ortho&quot;</span><span class="p">:</span>
+            <span class="n">data_year</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;https://geoportal.geoportal-th.de/gaialight-th/_apps/dladownload/download.php?type=op&amp;id=</span><span class="si">{}</span><span class="s2">&quot;&quot;&quot;</span> \
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">hy_file_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;image_data/orthophotos/</span><span class="si">{}</span><span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">year_list</span><span class="p">[</span><span class="n">index</span><span class="p">]))</span>
+            <span class="n">file_name_part_1</span> <span class="o">=</span> <span class="n">tile_number_list</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">file_name_part_2</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">year_list</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+        <span class="c1"># set the name of the zip file</span>
+        <span class="n">zip_name</span> <span class="o">=</span> <span class="n">data_kind</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">data_year</span> <span class="o">+</span> <span class="s2">&quot;.zip&quot;</span>
+        <span class="k">if</span> <span class="n">type_to_download</span> <span class="o">==</span> <span class="s2">&quot;ortho&quot;</span><span class="p">:</span>
+            <span class="n">zip_name</span> <span class="o">=</span> <span class="s2">&quot;orthophoto_&quot;</span> <span class="o">+</span> <span class="n">tile_number_list</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">year_list</span><span class="p">[</span><span class="n">index</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;.zip&quot;</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="c1"># append the zip file name to zip file name list</span>
+        <span class="n">zip_data_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">zip_name</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">zip_name</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span><span class="p">])</span>
+        <span class="c1"># download the zip data file if there is no file with the name that it would get and</span>
+        <span class="c1"># if the content of the zip file is not already present</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">zip_name</span><span class="p">)</span> <span class="ow">and</span> \
+                <span class="p">(</span><span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">hy_file_path</span> <span class="o">+</span> <span class="n">file_name</span><span class="p">)</span> <span class="ow">or</span> <span class="n">type_to_download</span> <span class="o">==</span> <span class="s2">&quot;ortho&quot;</span><span class="p">):</span>
+            <span class="c1"># extra check for orthophotos (necessary because the full filename is harder to predict/construct)</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">type_to_download</span> <span class="o">==</span> <span class="s2">&quot;ortho&quot;</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">hy_file_path</span><span class="p">):</span>
+                <span class="n">file_list</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">hy_file_path</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">file_name_part_1</span> <span class="ow">in</span> <span class="n">file</span> <span class="ow">and</span> <span class="n">file_name_part_2</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                        <span class="n">stop</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+            <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># set variables for the loop</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">zip_name</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span>
+            <span class="c1"># download and write data (downloading the data file in chunks is useful to save ram)</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+            <span class="c1"># close data</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="c1"># return the zip file name list if it is not empty</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zip_data_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">zip_data_list</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;no_new_data&quot;</span></div>
+
+
+<div class="viewcode-block" id="create_and_unzip"><a class="viewcode-back" href="../Geo_419b.html#main.create_and_unzip">[docs]</a><span class="k">def</span> <span class="nf">create_and_unzip</span><span class="p">(</span><span class="n">folder_path</span><span class="p">,</span> <span class="n">zip_files</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a folder (if it is not already existing) and unzip a list of ZIP files into it.</span>
+<span class="sd">    Before the function tries to unpacks a file, it checks whether this file actually exists in the working directory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    folder_path: str</span>
+<span class="sd">        Path to / name of the folder to create.</span>
+<span class="sd">    zip_files: list of str</span>
+<span class="sd">        A list containing the names of the ZIP files to be unzipped.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># create folder</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span>
+    <span class="c1"># loop through the list</span>
+    <span class="k">for</span> <span class="n">zip_file</span> <span class="ow">in</span> <span class="n">zip_files</span><span class="p">:</span>
+        <span class="c1"># add .zip if necessary</span>
+        <span class="k">if</span> <span class="s2">&quot;.zip&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">zip_file</span><span class="p">:</span>
+            <span class="n">zip_file</span> <span class="o">=</span> <span class="n">zip_file</span> <span class="o">+</span> <span class="s2">&quot;.zip&quot;</span>
+        <span class="c1"># check if file exist before trying to unzip it</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">zip_file</span><span class="p">):</span>
+            <span class="c1"># unzip the file</span>
+            <span class="n">zipped_data</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">zip_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+            <span class="n">zipped_data</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">folder_path</span><span class="p">)</span>
+            <span class="n">zipped_data</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="intersect_geodfs"><a class="viewcode-back" href="../Geo_419b.html#main.intersect_geodfs">[docs]</a><span class="k">def</span> <span class="nf">intersect_geodfs</span><span class="p">(</span><span class="n">geodf_1</span><span class="p">,</span> <span class="n">geodf_2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Intersects two geodataframes and returns the intersected geodataframe. If the coordinate reference system (crs) of</span>
+<span class="sd">    the geodataframes is different the first geodataframe is re-projected to the crs of the second geodataframe.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    geodf_1: geopandas.geodataframe.GeoDataFrame</span>
+<span class="sd">        geodataframe 1</span>
+<span class="sd">    geodf_2: geopandas.geodataframe.GeoDataFrame</span>
+<span class="sd">        geodataframe 2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    intersected_geodf: geopandas.geodataframe.GeoDataFrame</span>
+<span class="sd">        intersected geodataframe</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># re-project geodf_1 if necessary</span>
+    <span class="n">re</span> <span class="o">=</span> <span class="n">geodf_2</span><span class="o">.</span><span class="n">crs</span> <span class="o">==</span> <span class="n">geodf_1</span><span class="o">.</span><span class="n">crs</span>
+    <span class="k">if</span> <span class="n">re</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">geodf_1</span> <span class="o">=</span> <span class="n">geodf_1</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">geodf_2</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+    <span class="c1"># execute join / intersect</span>
+    <span class="n">intersected_geodf</span> <span class="o">=</span> <span class="n">geopandas</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span><span class="n">geodf_1</span><span class="p">,</span> <span class="n">geodf_2</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
+    <span class="c1"># return the result</span>
+    <span class="k">return</span> <span class="n">intersected_geodf</span></div>
+
+
+<div class="viewcode-block" id="create_elev_download_list"><a class="viewcode-back" href="../Geo_419b.html#main.create_elev_download_list">[docs]</a><span class="k">def</span> <span class="nf">create_elev_download_list</span><span class="p">(</span><span class="n">elev_aoi</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">start_year</span><span class="p">,</span> <span class="n">end_year</span><span class="p">,</span> <span class="n">month_start_year</span><span class="p">,</span> <span class="n">month_end_year</span><span class="p">,</span>
+                              <span class="n">additional_check</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a list that contains the part of the URL that is different for each data tile for all data tiles to be</span>
+<span class="sd">    downloaded and returns that list. If there is no data for the specified year, stop is returned.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    elev_aoi: geopandas.geodataframe.GeoDataFrame</span>
+<span class="sd">        The Intersected geodataframe of the area of interest and the metadata geodataframe.</span>
+<span class="sd">    year: int</span>
+<span class="sd">        The year of interest or one of the years ot interest.</span>
+<span class="sd">    start_year: int</span>
+<span class="sd">        First year of interest.</span>
+<span class="sd">    end_year: int</span>
+<span class="sd">        Last year of interest.</span>
+<span class="sd">    month_start_year: int</span>
+<span class="sd">        First month of interest.</span>
+<span class="sd">    month_end_year: int</span>
+<span class="sd">        Last month of interest.</span>
+<span class="sd">    additional_check: str</span>
+<span class="sd">        Is this an additional check.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    elev_download_list: list of str</span>
+<span class="sd">         A list that contains the part of the URL that is different for each data tile for all data tiles to be</span>
+<span class="sd">         downloaded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># month list</span>
+    <span class="n">m_l</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;-01&quot;</span><span class="p">,</span> <span class="s2">&quot;-02&quot;</span><span class="p">,</span> <span class="s2">&quot;-03&quot;</span><span class="p">,</span> <span class="s2">&quot;-04&quot;</span><span class="p">,</span> <span class="s2">&quot;-05&quot;</span><span class="p">,</span> <span class="s2">&quot;-06&quot;</span><span class="p">,</span> <span class="s2">&quot;-07&quot;</span><span class="p">,</span> <span class="s2">&quot;-08&quot;</span><span class="p">,</span> <span class="s2">&quot;-09&quot;</span><span class="p">,</span> <span class="s2">&quot;-10&quot;</span><span class="p">,</span> <span class="s2">&quot;-11&quot;</span><span class="p">,</span> <span class="s2">&quot;-12&quot;</span><span class="p">]</span>
+    <span class="c1"># exclude the months that should not be checked</span>
+    <span class="k">if</span> <span class="n">year</span> <span class="o">==</span> <span class="n">start_year</span> <span class="ow">and</span> <span class="n">month_start_year</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">month_start_year</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">m_l</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">m_l</span><span class="p">[</span><span class="n">month_start_year</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">year</span> <span class="o">==</span> <span class="n">end_year</span> <span class="ow">and</span> <span class="n">month_end_year</span> <span class="o">!=</span> <span class="mi">12</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">month_end_year</span><span class="p">,</span> <span class="mi">12</span><span class="p">):</span>
+            <span class="n">m_l</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">m_l</span><span class="p">[</span><span class="n">month_end_year</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># filter by date to find the relevant tiles</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+    <span class="n">filtered_data</span> <span class="o">=</span> <span class="n">elev_aoi</span><span class="p">[(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">|</span> <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">|</span>
+                             <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">|</span> <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">|</span>
+                             <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="o">|</span> <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="o">|</span>
+                             <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span> <span class="o">|</span> <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span> <span class="o">|</span>
+                             <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">8</span><span class="p">])</span> <span class="o">|</span> <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">9</span><span class="p">])</span> <span class="o">|</span>
+                             <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span> <span class="o">|</span> <span class="p">(</span><span class="n">elev_aoi</span><span class="p">[</span><span class="s2">&quot;ERFASSUNG&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span> <span class="o">+</span> <span class="n">m_l</span><span class="p">[</span><span class="mi">11</span><span class="p">])]</span>
+    <span class="c1"># if there is no data return stop</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filtered_data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;stop&quot;</span>
+    <span class="c1"># create list of the relevant tiles</span>
+    <span class="c1"># since the meta data is not uniform, an if else statement is necessary</span>
+    <span class="k">if</span> <span class="n">year</span> <span class="o">&lt;</span> <span class="s2">&quot;2014&quot;</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="s2">&quot;check&quot;</span> <span class="ow">or</span> <span class="n">year</span> <span class="o">==</span> <span class="s2">&quot;2014&quot;</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="s2">&quot;check&quot;</span><span class="p">:</span>
+        <span class="n">temp_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">filtered_data</span><span class="p">[</span><span class="s2">&quot;DGM_1X1&quot;</span><span class="p">])</span>
+        <span class="n">elev_download_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">temp_list</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
+            <span class="n">elev_download_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">elev_download_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">filtered_data</span><span class="p">[</span><span class="s2">&quot;NAME&quot;</span><span class="p">])</span>
+    <span class="c1"># return the list of relevant tiles</span>
+    <span class="k">return</span> <span class="n">elev_download_list</span></div>
+
+
+<div class="viewcode-block" id="delete_zip_files"><a class="viewcode-back" href="../Geo_419b.html#main.delete_zip_files">[docs]</a><span class="k">def</span> <span class="nf">delete_zip_files</span><span class="p">(</span><span class="n">zip_files</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deletes one or more ZIP files. Before the function tries to delete a file, it checks whether</span>
+<span class="sd">    this file actually exists in the working directory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    zip_files: list of str</span>
+<span class="sd">        A list containing the names of the ZIP files to be deleted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># for loop to cycle through the whole list</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">zip_files</span><span class="p">:</span>
+        <span class="c1"># check if the zip file to delete actually exist</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="s2">&quot;.zip&quot;</span><span class="p">):</span>
+            <span class="c1"># delete the zip file</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="s2">&quot;.zip&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="c_tile_number_df"><a class="viewcode-back" href="../Geo_419b.html#main.c_tile_number_df">[docs]</a><span class="k">def</span> <span class="nf">c_tile_number_df</span><span class="p">(</span><span class="n">geodf</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates and returns a dataframe that contains the tile numbers of a geodataframe.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    geodf: geopandas.geodataframe.GeoDataFrame</span>
+<span class="sd">        The Intersected geodataframe of the area of interest and the tile number geodataframe.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df: pandas.core.frame.DataFrame</span>
+<span class="sd">         That contains the tile numbers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get the relevant tile_numbers</span>
+    <span class="n">tile_number_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">temp_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">geodf</span><span class="p">[</span><span class="s2">&quot;DGM_1X1&quot;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">tile_number</span> <span class="ow">in</span> <span class="n">temp_list</span><span class="p">:</span>
+        <span class="n">tile_number_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tile_number</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+    <span class="c1"># create the df</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;tile_number&quot;</span><span class="p">:</span> <span class="n">tile_number_list</span><span class="p">}</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="split_df"><a class="viewcode-back" href="../Geo_419b.html#main.split_df">[docs]</a><span class="k">def</span> <span class="nf">split_df</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Splits a dataframe into two (based on the year) and returns a list that contains the two new dataframes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df: pandas.core.frame.DataFrame</span>
+<span class="sd">        The dataframe to be split.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list_: list of pandas.core.frame.DataFrames</span>
+<span class="sd">        A list containing the new dataframes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">list_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="c1"># create df for the years before 2019 and for 2019 and later</span>
+    <span class="n">df_before_2019</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2019</span><span class="p">]</span>
+    <span class="n">df_after_2018</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">2019</span><span class="p">]</span>
+    <span class="c1"># append dfs to list</span>
+    <span class="n">list_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_after_2018</span><span class="p">)</span>
+    <span class="n">list_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_before_2019</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">list_</span></div>
+
+
+<div class="viewcode-block" id="get_relevant_url_ids"><a class="viewcode-back" href="../Geo_419b.html#main.get_relevant_url_ids">[docs]</a><span class="k">def</span> <span class="nf">get_relevant_url_ids</span><span class="p">(</span><span class="n">url_id_df</span><span class="p">,</span> <span class="n">tile_number_df</span><span class="p">,</span> <span class="n">start_year</span><span class="p">,</span> <span class="n">end_year</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates and returns three list that are needed for the download of the orthophotos and one list contacting the years</span>
+<span class="sd">    where orthophotos are available only for a part of the area of interest. To accomplish this, several dataframe</span>
+<span class="sd">    operations are performed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url_id_df: pandas.core.frame.DataFrame</span>
+<span class="sd">        Dataframe with the the ID part of all URLs, the years and the tile numbers as columns.</span>
+<span class="sd">    tile_number_df: pandas.core.frame.DataFrame</span>
+<span class="sd">        Dataframe containing all relevant tile numbers.</span>
+<span class="sd">    start_year: int</span>
+<span class="sd">        First year or interest.</span>
+<span class="sd">    end_year:</span>
+<span class="sd">        Last year of interest.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    url_id_list: list of str</span>
+<span class="sd">        A list which contains the ID part of the URL for each orthophoto downloaded.</span>
+<span class="sd">    year_list: list of int</span>
+<span class="sd">        A list which contains the year of capture of each orthophoto to be downloaded.</span>
+<span class="sd">    tile_number_list: list of str</span>
+<span class="sd">         A list which contains the tile number of each orthophoto to be downloaded.</span>
+<span class="sd">    partly_data_list: list of int</span>
+<span class="sd">        A list contacting the years where orthophotos are available only for a part of the area of interest.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check if the years are before 2019</span>
+    <span class="k">if</span> <span class="n">end_year</span> <span class="o">&lt;</span> <span class="mi">2019</span> <span class="ow">or</span> <span class="n">url_id_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2019</span> <span class="ow">and</span> <span class="n">start_year</span> <span class="o">&lt;</span> <span class="mi">2019</span><span class="p">:</span>
+        <span class="c1"># add additional tile numbers to the tile_number_df if necessary</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tile_number_df</span><span class="p">):</span>
+            <span class="c1"># split the tile number df</span>
+            <span class="n">split</span> <span class="o">=</span> <span class="n">tile_number_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;tile_number&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+            <span class="c1"># check if it could be necessary to add a tile number and if yes create it</span>
+            <span class="c1"># check if the &quot;new&quot; tile number is already in the df if no replace the unnecessary tile number</span>
+            <span class="c1"># if yes delete the the unnecessary tile number</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">new_part_1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">new_tile_number</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_part_1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">new_tile_number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tile_number_df</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+                    <span class="n">tile_number_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;tile_number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_tile_number</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">tile_number_df</span> <span class="o">=</span> <span class="n">tile_number_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">tile_number_df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">new_part_2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">new_tile_number</span> <span class="o">=</span> <span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_part_2</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_tile_number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tile_number_df</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+                    <span class="n">tile_number_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;tile_number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_tile_number</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">tile_number_df</span> <span class="o">=</span> <span class="n">tile_number_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">tile_number_df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">new_part_1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">new_part_2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">new_tile_number</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_part_1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_part_2</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_tile_number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tile_number_df</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+                    <span class="n">tile_number_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;tile_number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_tile_number</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">tile_number_df</span> <span class="o">=</span> <span class="n">tile_number_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">tile_number_df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+    <span class="c1"># execute inner join</span>
+    <span class="n">joined_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">url_id_df</span><span class="p">,</span> <span class="n">tile_number_df</span><span class="p">)</span>
+    <span class="c1"># filter relevant years</span>
+    <span class="n">filtered_df</span> <span class="o">=</span> <span class="n">joined_df</span><span class="p">[(</span><span class="n">joined_df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">start_year</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">joined_df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">end_year</span><span class="p">)]</span>
+    <span class="c1"># store relevant url_ids acquisition years and tile numbers in lists and return them</span>
+    <span class="n">url_id_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">filtered_df</span><span class="p">[</span><span class="s2">&quot;url_id&quot;</span><span class="p">])</span>
+    <span class="n">year_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">filtered_df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
+    <span class="n">tile_number_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">filtered_df</span><span class="p">[</span><span class="s2">&quot;tile_number&quot;</span><span class="p">])</span>
+    <span class="c1"># check if there are orthophotos available for the whole aoi for each year (only necessary for years before 2018)</span>
+    <span class="c1"># add years where this is not the case to a list and return that list</span>
+    <span class="n">partly_data_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">end_year</span> <span class="o">&lt;</span> <span class="mi">2019</span> <span class="ow">or</span> <span class="n">url_id_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2019</span> <span class="ow">and</span> <span class="n">start_year</span> <span class="o">&lt;</span> <span class="mi">2019</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_year</span><span class="p">,</span> <span class="n">end_year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">year</span> <span class="o">&lt;</span> <span class="mi">2018</span><span class="p">:</span>
+                <span class="n">year_df</span> <span class="o">=</span> <span class="n">filtered_df</span><span class="p">[(</span><span class="n">filtered_df</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">year_df</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tile_number_df</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">year_df</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">partly_data_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">url_id_list</span><span class="p">,</span> <span class="n">year_list</span><span class="p">,</span> <span class="n">tile_number_list</span><span class="p">,</span> <span class="n">partly_data_list</span></div>
+
+
+<div class="viewcode-block" id="GeoFileHandler"><a class="viewcode-back" href="../Geo_419b.html#main.GeoFileHandler">[docs]</a><span class="k">class</span> <span class="nc">GeoFileHandler</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    class to represent a folder with geo-files</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path: str</span>
+<span class="sd">        path of the directory which contains the folder</span>
+<span class="sd">    folder_name: str</span>
+<span class="sd">        name of the folder</span>
+<span class="sd">    geo_file_list: list of dict</span>
+<span class="sd">        a list of dict of {str, array[int]} which contains the absolute path and</span>
+<span class="sd">        extension [minX, minY, maxX, maxY] of a geo-file</span>
+<span class="sd">    file_list: list of str</span>
+<span class="sd">        list of absolute paths of all files created from geo_file_list because</span>
+<span class="sd">        its needed gdal.BuildVRT() in method create_vrt</span>
+<span class="sd">    extension: array of int</span>
+<span class="sd">        array with [minX, minY, maxX, maxY] for all files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">folder_name</span><span class="p">,</span> <span class="n">geo_file_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct all necessary attributes for the objects.</span>
+<span class="sd">        Calculates the the extension of all rasters for the raster mosaic</span>
+<span class="sd">        path: str</span>
+<span class="sd">            path of the directory with the folder</span>
+<span class="sd">        folder_name: str</span>
+<span class="sd">            name of the folder</span>
+<span class="sd">        geo_file_list: list of dict</span>
+<span class="sd">            a list of dict of {str, array[int]} which contains the absolute path and</span>
+<span class="sd">            extension [minX, minY, maxX, maxY] of a geo-file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">folder</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">folder_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">folder_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo_file_list</span> <span class="o">=</span> <span class="n">geo_file_list</span>
+        <span class="n">full_extent</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">geo_file_list</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geo_file_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;file&quot;</span><span class="p">])</span>
+            <span class="c1"># needed for gdal.BuildVRT() in method create_vrt</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># extent of first raster is full extent temporary</span>
+                <span class="n">full_extent</span> <span class="o">=</span> <span class="n">geo_file_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;extent&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
+                    <span class="c1"># if new minimum</span>
+                    <span class="k">if</span> <span class="n">geo_file_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;extent&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">full_extent</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                        <span class="n">full_extent</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">geo_file_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;extent&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
+                    <span class="c1"># if new maximum</span>
+                    <span class="k">if</span> <span class="n">geo_file_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;extent&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">full_extent</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                        <span class="n">full_extent</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">geo_file_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;extent&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">=</span> <span class="n">full_extent</span>
+
+<div class="viewcode-block" id="GeoFileHandler.create_vrt"><a class="viewcode-back" href="../Geo_419b.html#main.GeoFileHandler.create_vrt">[docs]</a>    <span class="k">def</span> <span class="nf">create_vrt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">epsg</span><span class="o">=</span><span class="s2">&quot;EPSG: 25832&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        creates a raster-mosaic using gdal.BuildVRT and export as GeoTiff in choosable crs</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name: str</span>
+<span class="sd">            name of the GeoTiff</span>
+<span class="sd">        epsg: str, default=EPSG: 25832</span>
+<span class="sd">            EPSG-code of chosen crs</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># build vrt</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">BuildVRTOptions</span><span class="p">(</span><span class="n">outputBounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">)</span>
+        <span class="n">vrt</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">BuildVRT</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">folder</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s2">&quot;.vrt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">opts</span><span class="p">)</span>
+        <span class="c1"># warp in chosen crs</span>
+        <span class="n">vrt_warped</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Warp</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">vrt</span><span class="p">,</span> <span class="n">dstSRS</span><span class="o">=</span><span class="n">epsg</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;vrt&#39;</span><span class="p">)</span>
+        <span class="c1"># write as GeoTiff</span>
+        <span class="n">gdal</span><span class="o">.</span><span class="n">Translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">folder</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s2">&quot;.tif&quot;</span><span class="p">,</span> <span class="n">vrt_warped</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;GTiff&#39;</span><span class="p">,</span>
+                       <span class="n">creationOptions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;COMPRESS:DEFLATE&#39;</span><span class="p">,</span> <span class="s1">&#39;TILED:YES&#39;</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="go_through_all_raster"><a class="viewcode-back" href="../Geo_419b.html#main.go_through_all_raster">[docs]</a><span class="k">def</span> <span class="nf">go_through_all_raster</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">ending</span><span class="p">,</span> <span class="n">file_cor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    go through all raster of path including subfolders. Calling the function raster_correction (file_cor given)</span>
+<span class="sd">    or create_geo_file_dic (no file_cor given) to get the a dictionary with file end extent. For each subfolder</span>
+<span class="sd">    an instance of the class GeoFileHandler is created. All Objects of GeoFileHandler are returned as a list.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dir: str</span>
+<span class="sd">        directory with subfolders, witch contains all raster datasets</span>
+<span class="sd">    ending: str</span>
+<span class="sd">        file extension of the raster dataset (f.e. .tif)</span>
+<span class="sd">    file_cor: str or None, default=None</span>
+<span class="sd">        path of a file for raster correction</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    geo_file_handler_list: list of GeoFileHandler</span>
+<span class="sd">        list  with instances of GeoFileHandler for every subfolder</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">folder_list</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="nb">dir</span><span class="p">)</span>
+    <span class="n">geo_file_handler_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">folder_list</span><span class="p">)):</span>
+        <span class="c1"># loop through every folder in directory</span>
+        <span class="n">file_list</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="nb">dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">folder_list</span><span class="p">[</span><span class="n">i1</span><span class="p">])</span>
+        <span class="n">out_file_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">file_list</span><span class="p">)):</span>
+            <span class="c1"># loop through every subfolder in folder</span>
+            <span class="k">if</span> <span class="n">file_list</span><span class="p">[</span><span class="n">i2</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">ending</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">file_cor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">out_file_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">raster_correction</span><span class="p">(</span><span class="nb">dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">folder_list</span><span class="p">[</span><span class="n">i1</span><span class="p">],</span> <span class="n">file_list</span><span class="p">[</span><span class="n">i2</span><span class="p">],</span>
+                                                           <span class="n">file_cor</span><span class="p">,</span> <span class="n">ending</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">out_file_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">create_geo_file_dic</span><span class="p">(</span><span class="nb">dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">folder_list</span><span class="p">[</span><span class="n">i1</span><span class="p">],</span> <span class="n">file_list</span><span class="p">[</span><span class="n">i2</span><span class="p">]))</span>
+        <span class="n">geo_file_handler_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GeoFileHandler</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">folder_list</span><span class="p">[</span><span class="n">i1</span><span class="p">],</span> <span class="n">out_file_list</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">geo_file_handler_list</span></div>
+
+
+<div class="viewcode-block" id="create_geo_file_dic"><a class="viewcode-back" href="../Geo_419b.html#main.create_geo_file_dic">[docs]</a><span class="k">def</span> <span class="nf">create_geo_file_dic</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    calculate the geometric extension of a raster</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dir: str</span>
+<span class="sd">        directory</span>
+<span class="sd">    file: str</span>
+<span class="sd">        name of th file</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        dict of {str: array[int]} with the path as str and an array with the geometric extension with</span>
+<span class="sd">        the following values [minX, minY, maxX, maxY]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">raster_str</span> <span class="o">=</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">file</span>
+    <span class="n">raster</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">raster_str</span><span class="p">)</span>
+    <span class="n">gt</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">GetGeoTransform</span><span class="p">()</span>
+    <span class="n">x_size</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">RasterXSize</span>
+    <span class="n">y_size</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">RasterYSize</span>
+    <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="n">gt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gt</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">gt</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">*</span> <span class="n">y_size</span><span class="p">,</span>
+              <span class="n">gt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">gt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">x_size</span><span class="p">,</span> <span class="n">gt</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="n">raster_str</span><span class="p">,</span> <span class="s2">&quot;extent&quot;</span><span class="p">:</span> <span class="n">extent</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="raster_correction"><a class="viewcode-back" href="../Geo_419b.html#main.raster_correction">[docs]</a><span class="k">def</span> <span class="nf">raster_correction</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">file_raster</span><span class="p">,</span> <span class="n">file_cor</span><span class="p">,</span> <span class="n">ending</span><span class="p">,</span> <span class="n">epsg</span><span class="o">=</span><span class="s2">&quot;EPSG: 25832&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    corrects every raster value by addition with a second raster (correction file).</span>
+<span class="sd">    Writes the result as a new GeoTiff by replacing the original file extension with _UTM_cor.tif</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dir: str</span>
+<span class="sd">        directory</span>
+<span class="sd">    file_raster: str</span>
+<span class="sd">        name of the input raster</span>
+<span class="sd">    file_cor: str</span>
+<span class="sd">        path of the correction-raster-file</span>
+<span class="sd">    ending: str</span>
+<span class="sd">        file extension of the input raster</span>
+<span class="sd">    epsg: str, optional, default=EPSG: 25832</span>
+<span class="sd">        EPSG-code of the input raster. just necessary if not EPSG: 25832</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        dict of {str: array[int]} with the path as str and an array with the geometric extension with</span>
+<span class="sd">        the following values [minX, minY, maxX, maxY] for the calculated raster</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">raster_str</span> <span class="o">=</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">file_raster</span>
+    <span class="n">out_file</span> <span class="o">=</span> <span class="n">raster_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">ending</span><span class="p">,</span> <span class="s2">&quot;_UTM_cor.tif&quot;</span><span class="p">)</span>
+    <span class="c1"># open raster</span>
+    <span class="n">raster</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">raster_str</span><span class="p">)</span>
+    <span class="n">gt</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">GetGeoTransform</span><span class="p">()</span>
+    <span class="n">x_size</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">RasterXSize</span>
+    <span class="n">y_size</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">RasterYSize</span>
+    <span class="c1"># calculate extension</span>
+    <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="n">gt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gt</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">gt</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">*</span> <span class="n">y_size</span><span class="p">,</span>
+              <span class="n">gt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">gt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">x_size</span><span class="p">,</span> <span class="n">gt</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+    <span class="c1"># [minX, minY, maxX, maxY]</span>
+
+    <span class="c1"># warp correction, so that it matches the input raster in crs, extension and resolution</span>
+    <span class="n">cor_warp</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Warp</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                         <span class="n">file_cor</span><span class="p">,</span>
+                         <span class="n">dstSRS</span><span class="o">=</span><span class="n">epsg</span><span class="p">,</span>
+                         <span class="n">xRes</span><span class="o">=</span><span class="n">gt</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                         <span class="n">yRes</span><span class="o">=</span><span class="n">gt</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span>
+                         <span class="n">resampleAlg</span><span class="o">=</span><span class="s1">&#39;bilinear&#39;</span><span class="p">,</span>
+                         <span class="n">outputBounds</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+                         <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;vrt&quot;</span><span class="p">)</span>
+    <span class="c1"># correction</span>
+    <span class="n">data_out</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">GetRasterBand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">ReadAsArray</span><span class="p">()</span> <span class="o">+</span> <span class="n">cor_warp</span><span class="o">.</span><span class="n">GetRasterBand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">ReadAsArray</span><span class="p">()</span>
+    <span class="c1"># driver for output</span>
+    <span class="n">driver</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">GetDriverByName</span><span class="p">(</span><span class="s2">&quot;GTiff&quot;</span><span class="p">)</span>
+    <span class="n">ds_out</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">Create</span><span class="p">(</span><span class="n">out_file</span><span class="p">,</span> <span class="n">x_size</span><span class="p">,</span> <span class="n">y_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">gdal</span><span class="o">.</span><span class="n">GDT_UInt16</span><span class="p">)</span>
+    <span class="n">ds_out</span><span class="o">.</span><span class="n">SetGeoTransform</span><span class="p">(</span><span class="n">cor_warp</span><span class="o">.</span><span class="n">GetGeoTransform</span><span class="p">())</span>  <span class="c1"># sets same geotransform as input</span>
+    <span class="n">ds_out</span><span class="o">.</span><span class="n">SetProjection</span><span class="p">(</span><span class="n">cor_warp</span><span class="o">.</span><span class="n">GetProjection</span><span class="p">())</span>  <span class="c1"># sets same projection as input</span>
+    <span class="n">band_out</span> <span class="o">=</span> <span class="n">ds_out</span><span class="o">.</span><span class="n">GetRasterBand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">band_out</span><span class="o">.</span><span class="n">WriteArray</span><span class="p">(</span><span class="n">data_out</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="n">out_file</span><span class="p">,</span> <span class="s2">&quot;extent&quot;</span><span class="p">:</span> <span class="n">extent</span><span class="p">}</span></div>
+
+
+<span class="c1"># main function</span>
+<div class="viewcode-block" id="auto_download"><a class="viewcode-back" href="../Geo_419b.html#main.auto_download">[docs]</a><span class="k">def</span> <span class="nf">auto_download</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span> <span class="n">path_shp</span><span class="p">,</span> <span class="n">start_year_elev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">month_start_year</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end_year_elev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">month_end_year</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">start_year_ortho</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_year_ortho</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dgm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dom</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">las</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">ortho</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">file_cor_dgm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">epsg_mosaic</span><span class="o">=</span><span class="s2">&quot;EPSG: 25832&quot;</span><span class="p">,</span> <span class="n">merge_dgm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">merge_dom</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">merge_ortho</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">True</span><span class="p">,):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The main function of the script, through the parameters of this function one can control the download of the</span>
+<span class="sd">    elevation data and orthophoto as well as the further processing of them (height correction and merging).</span>
+<span class="sd">    Depending on the parameters, the other functions of the script are called within this function to download the data</span>
+<span class="sd">    and perform the processing.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    working_dir: str</span>
+<span class="sd">        Path to the directory where the output is to be stored.</span>
+<span class="sd">    path_shp: str</span>
+<span class="sd">        Path to the shapefile of the area of interest.</span>
+<span class="sd">    start_year_elev: int or None, default=None</span>
+<span class="sd">        first year of interest for the elevation data</span>
+<span class="sd">    month_start_year: int, default=1</span>
+<span class="sd">        first month of interest for the elevation data</span>
+<span class="sd">    end_year_elev: int or None, default=None</span>
+<span class="sd">        last year of interest for the elevation data</span>
+<span class="sd">    month_end_year: int, default=12</span>
+<span class="sd">        last month of interest for the elevation data</span>
+<span class="sd">    start_year_ortho: int or None, default=None</span>
+<span class="sd">        first year of interest for the orthophotos</span>
+<span class="sd">    end_year_ortho: int or None, default=None</span>
+<span class="sd">        last year of interest for the orthophotos</span>
+<span class="sd">    dgm: bool, default=True</span>
+<span class="sd">        Are digital terrain models to be downloaded.</span>
+<span class="sd">    dom: bool, default=True</span>
+<span class="sd">        Are digital surface models to be downloaded.</span>
+<span class="sd">    las: bool, default=True</span>
+<span class="sd">        Should laser scanner data be downloaded.</span>
+<span class="sd">    ortho: bool, default=True</span>
+<span class="sd">        Should orthophotos be downloaded.</span>
+<span class="sd">    file_cor_dgm: str or None</span>
+<span class="sd">        Path to the height correction file.</span>
+<span class="sd">    epsg_mosaic: str, default=EPSG: 25832</span>
+<span class="sd">        EPSG-code of the merged mosaics.</span>
+<span class="sd">    merge_dgm: bool, default=True</span>
+<span class="sd">        Should the digital terrain models be merged.</span>
+<span class="sd">    merge_dom: bool, default=True</span>
+<span class="sd">        Should the digital surface models be merged.</span>
+<span class="sd">    merge_ortho: bool, default=True</span>
+<span class="sd">        Should the orthophotos be merged.</span>
+<span class="sd">    delete: bool, default=True</span>
+<span class="sd">        Should the Zip files be deleted.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># ---------- both ---------- #</span>
+    <span class="c1"># set working directory</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">working_dir</span><span class="p">)</span>
+    <span class="c1"># set aoi file path</span>
+    <span class="n">aoi_fp</span> <span class="o">=</span> <span class="n">path_shp</span>
+    <span class="c1"># load the aoi shapefile as geodataframe</span>
+    <span class="n">aoi</span> <span class="o">=</span> <span class="n">geopandas</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">aoi_fp</span><span class="p">)</span>
+    <span class="c1"># create a list in which the names of all zip files are stored</span>
+    <span class="c1"># so that they can be deleted at the end of the function</span>
+    <span class="n">zip_files_to_delete</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># ---------- elevation data ---------- #</span>
+    <span class="c1"># check if the user made the required specifications</span>
+    <span class="k">if</span> <span class="n">start_year_elev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">end_year_elev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># create some variables that are needed, because for some years an additional check is needed</span>
+        <span class="c1"># this is due to the fact that the data collection periods partly overlap</span>
+        <span class="n">additional_check</span> <span class="o">=</span> <span class="s2">&quot;false&quot;</span>
+        <span class="n">length_of_download_list</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">no_data_av</span> <span class="o">=</span> <span class="s2">&quot;?&quot;</span>
+        <span class="n">partly_data_av</span> <span class="o">=</span> <span class="s2">&quot;?&quot;</span>
+        <span class="c1"># loop to cover each year</span>
+        <span class="n">year</span> <span class="o">=</span> <span class="n">start_year_elev</span>
+        <span class="k">while</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">end_year_elev</span><span class="p">:</span>
+            <span class="c1"># check if there could be elevation data available for this year if not give the user feedback</span>
+            <span class="k">if</span> <span class="n">dgm</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">or</span> <span class="n">dom</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">or</span> <span class="n">las</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">url_year</span><span class="p">,</span> <span class="n">dem_n</span><span class="p">,</span> <span class="n">elev_meta_file</span> <span class="o">=</span> <span class="n">set_elev_variables</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">url_year</span> <span class="o">==</span> <span class="s2">&quot;stop&quot;</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There is no elevation data available prior to 2011.&quot;</span><span class="p">)</span>
+                    <span class="c1"># prevents unnecessary loop cycles</span>
+                    <span class="k">if</span> <span class="n">year</span> <span class="o">&lt;</span> <span class="mi">2011</span> <span class="o">&lt;=</span> <span class="n">end_year_elev</span><span class="p">:</span>
+                        <span class="n">year</span> <span class="o">=</span> <span class="mi">2010</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># changes because of additional check</span>
+                    <span class="k">if</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="mi">2014</span><span class="p">:</span>
+                        <span class="n">url_year</span><span class="p">,</span> <span class="n">dem_n</span><span class="p">,</span> <span class="n">elev_meta_file</span> <span class="o">=</span> <span class="n">set_elev_variables</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">year</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="n">additional_check</span> <span class="o">=</span> <span class="s2">&quot;check&quot;</span>
+                        <span class="n">end_year_elev</span> <span class="o">=</span> <span class="n">end_year_elev</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="c1"># download meta data</span>
+                    <span class="n">meta_data_name</span> <span class="o">=</span> <span class="n">data_download</span><span class="p">(</span><span class="n">data_list_to_download</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;meta_data_elevation_data_&quot;</span> <span class="o">+</span> <span class="n">url_year</span><span class="p">],</span>
+                                                   <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span> <span class="n">type_to_download</span><span class="o">=</span><span class="s2">&quot;meta_data&quot;</span><span class="p">,</span> <span class="n">url_year</span><span class="o">=</span><span class="n">url_year</span><span class="p">)</span>
+                    <span class="c1"># create folder for elevation data and unzip meta_data if necessary</span>
+                    <span class="c1"># add the zip name to the list of zip files that are to delete</span>
+                    <span class="k">if</span> <span class="n">meta_data_name</span> <span class="o">!=</span> <span class="s2">&quot;no_new_data&quot;</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;elevation_data/meta_data&quot;</span> <span class="o">+</span>
+                                                                         <span class="n">url_year</span> <span class="o">+</span> <span class="s2">&quot;.zip&quot;</span><span class="p">):</span>
+                        <span class="n">zip_files_to_delete</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;meta_data_elevation_data_&quot;</span> <span class="o">+</span> <span class="n">url_year</span><span class="p">)</span>
+                        <span class="n">create_and_unzip</span><span class="p">(</span><span class="n">folder_path</span><span class="o">=</span><span class="s2">&quot;elevation_data/meta_data&quot;</span><span class="p">,</span>
+                                         <span class="n">zip_files</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;meta_data_elevation_data_&quot;</span> <span class="o">+</span> <span class="n">url_year</span><span class="p">])</span>
+                    <span class="c1"># load meta_data shapefile as a geodataframe</span>
+                    <span class="n">elev_meta_data_geodf</span> <span class="o">=</span> <span class="n">geopandas</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s2">&quot;elevation_data/meta_data/&quot;</span> <span class="o">+</span> <span class="n">elev_meta_file</span><span class="p">)</span>
+                    <span class="c1"># intersect meta data and aoi geodataframe</span>
+                    <span class="n">elev_meta_data_aoi</span> <span class="o">=</span> <span class="n">intersect_geodfs</span><span class="p">(</span><span class="n">geodf_1</span><span class="o">=</span><span class="n">aoi</span><span class="p">,</span> <span class="n">geodf_2</span><span class="o">=</span><span class="n">elev_meta_data_geodf</span><span class="p">)</span>
+                    <span class="c1"># changes because of additional check</span>
+                    <span class="k">if</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="mi">2013</span> <span class="ow">or</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="mi">2019</span><span class="p">:</span>
+                        <span class="n">year</span> <span class="o">=</span> <span class="n">year</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="n">additional_check</span> <span class="o">=</span> <span class="s2">&quot;check&quot;</span>
+                        <span class="n">end_year_elev</span> <span class="o">=</span> <span class="n">end_year_elev</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="c1"># get download list</span>
+                    <span class="n">elev_download_list</span> <span class="o">=</span> <span class="n">create_elev_download_list</span><span class="p">(</span><span class="n">elev_aoi</span><span class="o">=</span><span class="n">elev_meta_data_aoi</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span>
+                                                                   <span class="n">start_year</span><span class="o">=</span><span class="n">start_year_elev</span><span class="p">,</span>
+                                                                   <span class="n">end_year</span><span class="o">=</span><span class="n">end_year_elev</span><span class="p">,</span>
+                                                                   <span class="n">month_start_year</span><span class="o">=</span><span class="n">month_start_year</span><span class="p">,</span>
+                                                                   <span class="n">month_end_year</span><span class="o">=</span><span class="n">month_end_year</span><span class="p">,</span>
+                                                                   <span class="n">additional_check</span><span class="o">=</span><span class="n">additional_check</span><span class="p">)</span>
+                    <span class="c1"># detect if an additional check should be executed for this year</span>
+                    <span class="k">if</span> <span class="n">year</span> <span class="o">==</span> <span class="mi">2013</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="mi">2013</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="s2">&quot;check&quot;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">end_year_elev</span> <span class="o">==</span> <span class="mi">2013</span> <span class="ow">and</span> <span class="n">month_end_year</span> <span class="o">!=</span> <span class="mi">12</span><span class="p">:</span>
+                            <span class="n">additional_check</span> <span class="o">=</span> <span class="s2">&quot;false&quot;</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">additional_check</span> <span class="o">=</span> <span class="mi">2013</span>
+                            <span class="n">end_year_elev</span> <span class="o">=</span> <span class="n">end_year_elev</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">year</span> <span class="o">==</span> <span class="mi">2014</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="mi">2014</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="s2">&quot;check&quot;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">end_year_elev</span> <span class="o">==</span> <span class="mi">2014</span> <span class="ow">and</span> <span class="n">month_end_year</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> \
+                                <span class="n">start_year_elev</span> <span class="o">==</span> <span class="mi">2014</span> <span class="ow">and</span> <span class="n">month_start_year</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                            <span class="n">additional_check</span> <span class="o">=</span> <span class="s2">&quot;false&quot;</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">additional_check</span> <span class="o">=</span> <span class="mi">2014</span>
+                            <span class="n">end_year_elev</span> <span class="o">=</span> <span class="n">end_year_elev</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">year</span> <span class="o">==</span> <span class="mi">2019</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="mi">2019</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="s2">&quot;check&quot;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">end_year_elev</span> <span class="o">==</span> <span class="mi">2019</span> <span class="ow">and</span> <span class="n">month_end_year</span> <span class="o">&lt;</span> <span class="mi">11</span><span class="p">:</span>
+                            <span class="n">additional_check</span> <span class="o">=</span> <span class="s2">&quot;false&quot;</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">additional_check</span> <span class="o">=</span> <span class="mi">2019</span>
+                            <span class="n">end_year_elev</span> <span class="o">=</span> <span class="n">end_year_elev</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="c1"># if the download list is empty give the user feedback about it and skip the rest of this loop cycle</span>
+                    <span class="c1"># but if there is an additional check pending for this year give no feedback yet because there is</span>
+                    <span class="c1"># still a chance that data for this year and region is available</span>
+                    <span class="k">if</span> <span class="n">elev_download_list</span> <span class="o">==</span> <span class="s2">&quot;stop&quot;</span> <span class="ow">and</span> <span class="n">length_of_download_list</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="mi">2013</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="mi">2014</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="mi">2019</span> <span class="ow">and</span> \
+                                <span class="p">(</span><span class="n">no_data_av</span> <span class="o">==</span> <span class="s2">&quot;probably&quot;</span> <span class="ow">or</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="s2">&quot;check&quot;</span><span class="p">)</span> <span class="ow">and</span> \
+                                <span class="n">partly_data_av</span> <span class="o">!=</span> <span class="s2">&quot;probably&quot;</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There is no elevation data available for the area for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">year</span> <span class="o">==</span> <span class="n">start_year_elev</span> <span class="ow">and</span> <span class="n">month_start_year</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span>\
+                                    <span class="n">year</span> <span class="o">==</span> <span class="n">end_year_elev</span> <span class="ow">and</span> <span class="n">month_end_year</span> <span class="o">!=</span> <span class="mi">12</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;At least for the selected months.&quot;</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">no_data_av</span> <span class="o">=</span> <span class="s2">&quot;probably&quot;</span>
+                        <span class="c1"># adjustments due to the additional check</span>
+                        <span class="k">if</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="s2">&quot;check&quot;</span><span class="p">:</span>
+                            <span class="n">no_data_av</span> <span class="o">=</span> <span class="s2">&quot;?&quot;</span>
+                            <span class="n">additional_check</span> <span class="o">=</span> <span class="s2">&quot;false&quot;</span>
+                        <span class="k">if</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="mi">2014</span><span class="p">:</span>
+                            <span class="n">year</span> <span class="o">=</span> <span class="n">year</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="n">year</span> <span class="o">=</span> <span class="n">year</span> <span class="o">+</span> <span class="mi">1</span>
+                        <span class="k">continue</span>
+                    <span class="c1"># if there is only data for part of the AOI inform the user about it but if there is an additional</span>
+                    <span class="c1"># check pending for this year give no feedback yet because there is  still a chance that data</span>
+                    <span class="c1"># for this year and region is available</span>
+                    <span class="k">if</span> <span class="n">elev_download_list</span> <span class="o">==</span> <span class="s2">&quot;stop&quot;</span><span class="p">:</span>
+                        <span class="n">elev_download_list</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">elev_download_list</span><span class="p">)</span> <span class="o">+</span> <span class="n">length_of_download_list</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">elev_meta_data_aoi</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="mi">2013</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="mi">2014</span> <span class="ow">and</span> <span class="n">additional_check</span> <span class="o">!=</span> <span class="mi">2019</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Only for a part of the area there is elevation data available for &quot;</span> <span class="o">+</span>
+                                  <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+                        <span class="c1"># save the length of the download list before the additional check if there is a check pending</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">length_of_download_list</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">elev_download_list</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="mi">2013</span> <span class="ow">or</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="mi">2014</span> <span class="ow">or</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="mi">2019</span><span class="p">:</span>
+                                <span class="n">partly_data_av</span> <span class="o">=</span> <span class="s2">&quot;probably&quot;</span>
+                    <span class="c1"># download the data,</span>
+                    <span class="c1"># if data was downloaded add the zip names to the list of zip files that are to delete</span>
+                    <span class="k">if</span> <span class="n">dgm</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">elev_download_list</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">elev_data_list</span> <span class="o">=</span> <span class="n">data_download</span><span class="p">(</span><span class="n">type_to_download</span><span class="o">=</span><span class="s2">&quot;dgm&quot;</span><span class="p">,</span> <span class="n">url_year</span><span class="o">=</span><span class="n">url_year</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span>
+                                                       <span class="n">data_list_to_download</span><span class="o">=</span><span class="n">elev_download_list</span><span class="p">,</span> <span class="n">dem_n</span><span class="o">=</span><span class="n">dem_n</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">elev_data_list</span> <span class="o">!=</span> <span class="s2">&quot;no_new_data&quot;</span><span class="p">:</span>
+                            <span class="n">create_and_unzip</span><span class="p">(</span><span class="n">folder_path</span><span class="o">=</span><span class="s2">&quot;elevation_data/dgm/&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">),</span> <span class="n">zip_files</span><span class="o">=</span><span class="n">elev_data_list</span><span class="p">)</span>
+                            <span class="n">zip_files_to_delete</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">elev_data_list</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">dom</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">elev_download_list</span> <span class="o">!=</span> <span class="s2">&quot;stop&quot;</span><span class="p">:</span>
+                        <span class="n">elev_data_list</span> <span class="o">=</span> <span class="n">data_download</span><span class="p">(</span><span class="n">type_to_download</span><span class="o">=</span><span class="s2">&quot;dom&quot;</span><span class="p">,</span> <span class="n">url_year</span><span class="o">=</span><span class="n">url_year</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span>
+                                                       <span class="n">data_list_to_download</span><span class="o">=</span><span class="n">elev_download_list</span><span class="p">,</span> <span class="n">dem_n</span><span class="o">=</span><span class="n">dem_n</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">elev_data_list</span> <span class="o">!=</span> <span class="s2">&quot;no_new_data&quot;</span><span class="p">:</span>
+                            <span class="n">create_and_unzip</span><span class="p">(</span><span class="n">folder_path</span><span class="o">=</span><span class="s2">&quot;elevation_data/dom/&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">),</span> <span class="n">zip_files</span><span class="o">=</span><span class="n">elev_data_list</span><span class="p">)</span>
+                            <span class="n">zip_files_to_delete</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">elev_data_list</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">las</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">elev_download_list</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">elev_data_list</span> <span class="o">=</span> <span class="n">data_download</span><span class="p">(</span><span class="n">type_to_download</span><span class="o">=</span><span class="s2">&quot;las&quot;</span><span class="p">,</span> <span class="n">url_year</span><span class="o">=</span><span class="n">url_year</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span>
+                                                       <span class="n">data_list_to_download</span><span class="o">=</span><span class="n">elev_download_list</span><span class="p">,</span> <span class="n">dem_n</span><span class="o">=</span><span class="n">dem_n</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">elev_data_list</span> <span class="o">!=</span> <span class="s2">&quot;no_new_data&quot;</span><span class="p">:</span>
+                            <span class="n">create_and_unzip</span><span class="p">(</span><span class="n">folder_path</span><span class="o">=</span><span class="s2">&quot;elevation_data/las/&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">),</span> <span class="n">zip_files</span><span class="o">=</span><span class="n">elev_data_list</span><span class="p">)</span>
+                            <span class="n">zip_files_to_delete</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">elev_data_list</span><span class="p">)</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">year</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="c1"># adjustments due to the additional check</span>
+            <span class="k">if</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="mi">2014</span><span class="p">:</span>
+                <span class="n">year</span> <span class="o">=</span> <span class="n">year</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">additional_check</span> <span class="o">==</span> <span class="s2">&quot;check&quot;</span><span class="p">:</span>
+                <span class="n">no_data_av</span> <span class="o">=</span> <span class="s2">&quot;?&quot;</span>
+                <span class="n">partly_data_av</span> <span class="o">=</span> <span class="s2">&quot;?&quot;</span>
+                <span class="n">additional_check</span> <span class="o">=</span> <span class="s2">&quot;false&quot;</span>
+                <span class="n">length_of_download_list</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># ---------- image data ---------- #</span>
+    <span class="c1"># check if the user made the required specifications</span>
+    <span class="k">if</span> <span class="n">ortho</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">start_year_ortho</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">end_year_ortho</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># download shp with tile numbers if necessary (auxiliary data)</span>
+        <span class="n">aux_data_name</span> <span class="o">=</span> <span class="n">data_download</span><span class="p">(</span><span class="n">data_list_to_download</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;meta_data_elevation_data_&quot;</span> <span class="o">+</span> <span class="s2">&quot;2010-2013&quot;</span><span class="p">],</span>
+                                      <span class="n">type_to_download</span><span class="o">=</span><span class="s2">&quot;auxiliary_data&quot;</span><span class="p">,</span> <span class="n">url_year</span><span class="o">=</span><span class="s2">&quot;2010-2013&quot;</span><span class="p">)</span>
+        <span class="c1"># create folder for image data and unzip auxiliary data if necessary</span>
+        <span class="k">if</span> <span class="n">aux_data_name</span> <span class="o">!=</span> <span class="s2">&quot;no_new_data&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;image_data/auxiliary_data&quot;</span><span class="p">):</span>
+            <span class="n">zip_files_to_delete</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">aux_data_name</span><span class="p">)</span>
+            <span class="n">create_and_unzip</span><span class="p">(</span><span class="n">folder_path</span><span class="o">=</span><span class="s2">&quot;image_data/auxiliary_data&quot;</span><span class="p">,</span>
+                             <span class="n">zip_files</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;meta_data_elevation_data_&quot;</span> <span class="o">+</span> <span class="s2">&quot;2010-2013&quot;</span><span class="p">])</span>
+        <span class="c1"># load tile_number_shp as a geodataframe</span>
+        <span class="n">tile_number_geodf</span> <span class="o">=</span> <span class="n">geopandas</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s2">&quot;image_data/auxiliary_data/&quot;</span> <span class="o">+</span>
+                                                <span class="s2">&quot;DGM2_2010-2013_Erfass-lt-Meta_UTM32-UTM_2014-12-10.shp&quot;</span><span class="p">)</span>
+        <span class="c1"># intersect aoi and tile_number_geodf</span>
+        <span class="n">aoi_tile_numbers_geodf</span> <span class="o">=</span> <span class="n">intersect_geodfs</span><span class="p">(</span><span class="n">geodf_1</span><span class="o">=</span><span class="n">aoi</span><span class="p">,</span> <span class="n">geodf_2</span><span class="o">=</span><span class="n">tile_number_geodf</span><span class="p">)</span>
+        <span class="c1"># create tile number df</span>
+        <span class="n">tile_number_df</span> <span class="o">=</span> <span class="n">c_tile_number_df</span><span class="p">(</span><span class="n">geodf</span><span class="o">=</span><span class="n">aoi_tile_numbers_geodf</span><span class="p">)</span>
+        <span class="c1"># download url_id_file if necessary</span>
+        <span class="n">url_id_data</span> <span class="o">=</span> <span class="n">data_download</span><span class="p">(</span><span class="n">data_list_to_download</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;url_id_data&quot;</span><span class="p">],</span> <span class="n">type_to_download</span><span class="o">=</span><span class="s2">&quot;auxiliary_data&quot;</span><span class="p">)</span>
+        <span class="c1"># extract url_id_file if necessary</span>
+        <span class="c1"># add the zip name to the list of zip files that are to delete</span>
+        <span class="k">if</span> <span class="n">url_id_data</span> <span class="o">!=</span> <span class="s2">&quot;no_new_data&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;image_data/auxiliary_data/url_id_file.csv&quot;</span><span class="p">):</span>
+            <span class="n">zip_files_to_delete</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">url_id_data</span><span class="p">)</span>
+            <span class="n">create_and_unzip</span><span class="p">(</span><span class="n">folder_path</span><span class="o">=</span><span class="s2">&quot;image_data/auxiliary_data/&quot;</span><span class="p">,</span> <span class="n">zip_files</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;url_id_data&quot;</span><span class="p">])</span>
+        <span class="c1"># load url id file as df</span>
+        <span class="n">url_id_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;image_data/auxiliary_data/url_id_file.csv&quot;</span><span class="p">)</span>
+        <span class="c1"># before 2019 the orthophoto covers a 2x2 km area and this affects the tile numbers</span>
+        <span class="c1"># split url_id_df (if necessary)</span>
+        <span class="k">if</span> <span class="n">end_year_ortho</span> <span class="o">&gt;=</span> <span class="mi">2019</span> <span class="ow">and</span> <span class="n">start_year_ortho</span> <span class="o">&lt;</span> <span class="mi">2019</span><span class="p">:</span>
+            <span class="n">url_id_df_list</span> <span class="o">=</span> <span class="n">split_df</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">url_id_df</span><span class="p">)</span>
+            <span class="c1"># get the relevant url ids, years and tile numbers</span>
+            <span class="n">url_id_list</span><span class="p">,</span> <span class="n">year_list</span><span class="p">,</span> <span class="n">tile_number_list</span><span class="p">,</span> <span class="n">partly_data_list</span> <span class="o">=</span> <span class="n">get_relevant_url_ids</span><span class="p">(</span>
+                <span class="n">url_id_df</span><span class="o">=</span><span class="n">url_id_df_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">tile_number_df</span><span class="o">=</span><span class="n">tile_number_df</span><span class="p">,</span>
+                <span class="n">start_year</span><span class="o">=</span><span class="n">start_year_ortho</span><span class="p">,</span>
+                <span class="n">end_year</span><span class="o">=</span><span class="n">end_year_ortho</span><span class="p">)</span>
+            <span class="n">url_id_list_2</span><span class="p">,</span> <span class="n">year_list_2</span><span class="p">,</span> <span class="n">tile_number_list_2</span><span class="p">,</span> <span class="n">partly_data_list_2</span> <span class="o">=</span> <span class="n">get_relevant_url_ids</span><span class="p">(</span>
+                <span class="n">url_id_df</span><span class="o">=</span><span class="n">url_id_df_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">tile_number_df</span><span class="o">=</span><span class="n">tile_number_df</span><span class="p">,</span>
+                <span class="n">start_year</span><span class="o">=</span><span class="n">start_year_ortho</span><span class="p">,</span>
+                <span class="n">end_year</span><span class="o">=</span><span class="n">end_year_ortho</span><span class="p">)</span>
+            <span class="n">url_id_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">url_id_list_2</span><span class="p">)</span>
+            <span class="n">year_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">year_list_2</span><span class="p">)</span>
+            <span class="n">tile_number_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tile_number_list_2</span><span class="p">)</span>
+            <span class="n">partly_data_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">partly_data_list_2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">url_id_list</span><span class="p">,</span> <span class="n">year_list</span><span class="p">,</span> <span class="n">tile_number_list</span><span class="p">,</span> <span class="n">partly_data_list</span> <span class="o">=</span> <span class="n">get_relevant_url_ids</span><span class="p">(</span>
+                <span class="n">url_id_df</span><span class="o">=</span><span class="n">url_id_df</span><span class="p">,</span>
+                <span class="n">tile_number_df</span><span class="o">=</span><span class="n">tile_number_df</span><span class="p">,</span>
+                <span class="n">start_year</span><span class="o">=</span><span class="n">start_year_ortho</span><span class="p">,</span>
+                <span class="n">end_year</span><span class="o">=</span><span class="n">end_year_ortho</span><span class="p">)</span>
+        <span class="c1"># inform the user if there are no orthophotos available</span>
+        <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_year_ortho</span><span class="p">,</span> <span class="n">end_year_ortho</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">year</span> <span class="ow">in</span> <span class="n">year_list</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are no orthophotos available for the area for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="c1"># inform the user if the orthophotos available for a year does not cover the whole aoi</span>
+        <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">partly_data_list</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Only for a part of the area there are orthophotos available available for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="c1"># download orthophotos</span>
+        <span class="n">image_data</span> <span class="o">=</span> <span class="n">data_download</span><span class="p">(</span><span class="n">type_to_download</span><span class="o">=</span><span class="s2">&quot;ortho&quot;</span><span class="p">,</span> <span class="n">data_list_to_download</span><span class="o">=</span><span class="n">url_id_list</span><span class="p">,</span>
+                                   <span class="n">year_list</span><span class="o">=</span><span class="n">year_list</span><span class="p">,</span> <span class="n">tile_number_list</span><span class="o">=</span><span class="n">tile_number_list</span><span class="p">)</span>
+        <span class="c1"># if data was downloaded unzip it and add the zip names to the list of zip files that are to delete</span>
+        <span class="k">if</span> <span class="n">image_data</span> <span class="o">!=</span> <span class="s2">&quot;no_new_data&quot;</span><span class="p">:</span>
+            <span class="n">zip_files_to_delete</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">image_data</span><span class="p">)</span>
+            <span class="c1"># loop to create a new folder for each year</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">zip_file_name</span> <span class="ow">in</span> <span class="n">image_data</span><span class="p">:</span>
+                <span class="n">create_and_unzip</span><span class="p">(</span><span class="n">folder_path</span><span class="o">=</span><span class="s2">&quot;image_data/orthophotos/&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">year_list</span><span class="p">[</span><span class="n">index</span><span class="p">]),</span>
+                                 <span class="n">zip_files</span><span class="o">=</span><span class="p">[</span><span class="n">zip_file_name</span><span class="p">])</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># ---------- both ---------- #</span>
+    <span class="c1"># dgm correction and raster merging</span>
+    <span class="k">if</span> <span class="n">file_cor_dgm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">geo_file_handler_list</span> <span class="o">=</span> <span class="n">go_through_all_raster</span><span class="p">(</span><span class="s2">&quot;./elevation_data/dgm&quot;</span><span class="p">,</span> <span class="s2">&quot;.xyz&quot;</span><span class="p">,</span> <span class="n">file_cor_dgm</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">merge_dgm</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">geo_file_handler_list</span><span class="p">)):</span>
+                <span class="n">geo_file_handler_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">create_vrt</span><span class="p">(</span><span class="s2">&quot;dgm_mosaic_&quot;</span><span class="o">+</span><span class="n">geo_file_handler_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">epsg_mosaic</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">merge_dgm</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">geo_file_handler_list</span> <span class="o">=</span> <span class="n">go_through_all_raster</span><span class="p">(</span><span class="s2">&quot;./elevation_data/dgm&quot;</span><span class="p">,</span> <span class="s2">&quot;.xyz&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">geo_file_handler_list</span><span class="p">)):</span>
+                <span class="n">geo_file_handler_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">create_vrt</span><span class="p">(</span><span class="s2">&quot;dgm_mosaic_&quot;</span><span class="o">+</span><span class="n">geo_file_handler_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">epsg_mosaic</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">merge_dom</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">geo_file_handler_list</span> <span class="o">=</span> <span class="n">go_through_all_raster</span><span class="p">(</span><span class="s2">&quot;./elevation_data/dom&quot;</span><span class="p">,</span> <span class="s2">&quot;.xyz&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">geo_file_handler_list</span><span class="p">)):</span>
+            <span class="n">geo_file_handler_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">create_vrt</span><span class="p">(</span><span class="s2">&quot;dom_mosaic_&quot;</span><span class="o">+</span><span class="n">geo_file_handler_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">epsg_mosaic</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">merge_ortho</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">geo_file_handler_list</span> <span class="o">=</span> <span class="n">go_through_all_raster</span><span class="p">(</span><span class="s2">&quot;./image_data/orthophotos&quot;</span><span class="p">,</span> <span class="s2">&quot;.tif&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">geo_file_handler_list</span><span class="p">)):</span>
+            <span class="n">geo_file_handler_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">create_vrt</span><span class="p">(</span><span class="s2">&quot;ortho_mosaic_&quot;</span><span class="o">+</span><span class="n">geo_file_handler_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">epsg_mosaic</span><span class="p">)</span>
+
+    <span class="c1"># if it is wanted delete the zip files</span>
+    <span class="k">if</span> <span class="n">delete</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">delete_zip_files</span><span class="p">(</span><span class="n">zip_files</span><span class="o">=</span><span class="n">zip_files_to_delete</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Fabian Schreiter and Jonathan Frank.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>_aux &mdash; Geo_419b 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Geo_419b
+          </a>
+              <div class="version">
+                1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../Geo_419b.html">Main documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Geo_419b.html#aux-documentation">_aux documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Geo_419b</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>_aux</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for _aux</h1><div class="highlight"><pre>
+<span></span><span class="c1"># import packages</span>
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">aiohttp</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+
+<div class="viewcode-block" id="get_hcd"><a class="viewcode-back" href="../Geo_419b.html#_aux.get_hcd">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">get_hcd</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The function requests the head content disposition from an URL and returns it together with the URL if an key error</span>
+<span class="sd">    occurs only the url is returned.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    session: aiohttp.client.ClientSession</span>
+<span class="sd">        the client session</span>
+<span class="sd">    url: str</span>
+<span class="sd">        The URL from which the header information should be read.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    head_content_disposition + &quot;__&quot; + url: srt</span>
+<span class="sd">        The head content disposition plus the corresponding URL as one string.</span>
+<span class="sd">    url: str</span>
+<span class="sd">        the URL</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># if there is no answer to the request a key error will occur</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># request head</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
+            <span class="c1"># select hcd</span>
+            <span class="n">head_content_disposition</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;content-disposition&quot;</span><span class="p">]</span>
+            <span class="c1"># return hcd + url</span>
+            <span class="k">return</span> <span class="n">head_content_disposition</span> <span class="o">+</span> <span class="s2">&quot;__&quot;</span> <span class="o">+</span> <span class="n">url</span>
+    <span class="c1"># if an key error occurs return the url</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">url</span></div>
+
+
+<span class="c1"># framework function for the request function</span>
+<div class="viewcode-block" id="framework_requests"><a class="viewcode-back" href="../Geo_419b.html#_aux.framework_requests">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">framework_requests</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">list_of_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    In this function first the framework for the request function is set. Then the request function is called repeatedly</span>
+<span class="sd">    to get the head content dispositions of the URLs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start: int</span>
+<span class="sd">        The number of the id part of the first URL to be checked.</span>
+<span class="sd">    stop: int</span>
+<span class="sd">        The number of the id part of the last URL to be checked.</span>
+<span class="sd">    list_of_ids: list of str or None</span>
+<span class="sd">        This Parameter should not be changed. It only plays a role in the additional checking of the key error URLs.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    hcd__url_list: list of str</span>
+<span class="sd">        A list with the head content dispositions plus the corresponding URLs.</span>
+<span class="sd">    url_key_error_list: list of str</span>
+<span class="sd">        A list with all URLs where a key error occurred.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># set timeout time / time limit</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientTimeout</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">12000</span><span class="p">)</span>
+    <span class="c1"># create client session so that not every request will open an new connection</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="c1"># create a tasks, hcd + url and only url(KeyError) list</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">hcd__url_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">url_key_error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1"># check if there is a list of ids</span>
+        <span class="k">if</span> <span class="n">list_of_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># loop through the list</span>
+            <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">list_of_ids</span><span class="p">:</span>
+                <span class="c1"># set url</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://geoportal.geoportal-th.de/gaialight-th/_apps/dladownload/download.php?type=op&amp;id=&quot;</span> <span class="o">+</span> \
+                      <span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+                <span class="c1"># append task to tasks list asyncio.ensure_future schedules the execution of the task</span>
+                <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="n">get_hcd</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">)))</span>
+        <span class="c1"># if there is no list there should be a range of values</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://geoportal.geoportal-th.de/gaialight-th/_apps/dladownload/download.php?type=op&amp;id=&quot;</span> <span class="o">+</span> \
+                      <span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+                <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="n">get_hcd</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">)))</span>
+        <span class="c1"># gather all Future tasks(executions of request function) and wait till they are finished</span>
+        <span class="n">hcd__url_all</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+        <span class="c1"># loop through the returns</span>
+        <span class="k">for</span> <span class="n">hcd__url</span> <span class="ow">in</span> <span class="n">hcd__url_all</span><span class="p">:</span>
+            <span class="c1"># check if the return is hcd + url or only the url and append them to the appropriate  list</span>
+            <span class="k">if</span> <span class="n">hcd__url</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;h&quot;</span><span class="p">:</span>
+                <span class="n">hcd__url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hcd__url</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">url_key_error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hcd__url</span><span class="p">)</span>
+        <span class="c1"># return hcd + url and only url(KeyError) list</span>
+        <span class="k">return</span> <span class="n">hcd__url_list</span><span class="p">,</span> <span class="n">url_key_error_list</span></div>
+
+
+<div class="viewcode-block" id="create_url_id_file"><a class="viewcode-back" href="../Geo_419b.html#_aux.create_url_id_file">[docs]</a><span class="k">def</span> <span class="nf">create_url_id_file</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">number_of_requests</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function creates CSV files with the id part ot the URL, the year of data acquisition and the tile number or</span>
+<span class="sd">    only the URL (if it is a key error URL) as columns.To achieve this, first the framework function is called to get</span>
+<span class="sd">    the head content dispositions or in case of a key error the URL. Then the information is filtered and the CSV files</span>
+<span class="sd">    are generated. Finally, the content of all non-key error CSV files is merged into one file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start: int</span>
+<span class="sd">        The number of the id part of the first URL to be checked.</span>
+<span class="sd">    stop: int</span>
+<span class="sd">        The number of the id part of the last URL to be checked.</span>
+<span class="sd">    out_path: str</span>
+<span class="sd">        Path to the folder where the output should be stored.</span>
+<span class="sd">    number_of_requests: int</span>
+<span class="sd">        Maximum number of concurrent requests (if the performance is not important, the default value should be kept).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    path_name: str</span>
+<span class="sd">        The path to the URL id file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># prevents RuntimeError: Event loop is closed</span>
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">set_event_loop_policy</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">WindowsSelectorEventLoopPolicy</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">number_of_requests</span><span class="p">)):</span>
+        <span class="c1"># run framework function</span>
+        <span class="n">hcd__url_re_list</span><span class="p">,</span> <span class="n">url_key_error_re_list</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">framework_requests</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">i1</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">i1</span><span class="o">+</span><span class="n">number_of_requests</span><span class="p">))</span>
+        <span class="c1"># cause the urls are sometimes not reachable for a short time</span>
+        <span class="c1"># every url that is unreachable  is checked for a second an if necessary even a third time</span>
+        <span class="k">for</span> <span class="n">i2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">url_key_error_re_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># create list of error url ids</span>
+                <span class="n">error_url_id_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="c1"># get url ids</span>
+                <span class="k">for</span> <span class="n">error_url_re</span> <span class="ow">in</span> <span class="n">url_key_error_re_list</span><span class="p">:</span>
+                    <span class="n">error_url_id</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">for</span> <span class="n">i3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">error_url_re</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">error_url_re</span><span class="p">)</span> <span class="o">-</span> <span class="n">i3</span><span class="p">:]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                            <span class="n">error_url_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">error_url_re</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">error_url_re</span><span class="p">)</span> <span class="o">-</span> <span class="n">i3</span><span class="p">:])</span>
+                            <span class="k">break</span>
+                    <span class="c1"># append url id to url id list</span>
+                    <span class="n">error_url_id_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error_url_id</span><span class="p">)</span>
+                <span class="c1"># run framework function with the error url id list as input</span>
+                <span class="n">hcd__url_re_list2</span><span class="p">,</span> <span class="n">url_key_error_re_list</span> <span class="o">=</span> \
+                    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">framework_requests</span><span class="p">(</span><span class="n">list_of_ids</span><span class="o">=</span><span class="n">error_url_id_list</span><span class="p">))</span>
+                <span class="c1"># add hcd + ulr to the already existing hcd + ulr list</span>
+                <span class="n">hcd__url_re_list</span> <span class="o">=</span> <span class="n">hcd__url_re_list</span> <span class="o">+</span> <span class="n">hcd__url_re_list2</span>
+        <span class="c1"># if the returned hcd + url list is not empty loop though the list</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hcd__url_re_list</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># create a list for the url ids, the years and the tile numbers</span>
+            <span class="n">url_id_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="n">year_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="n">tile_number_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="c1"># get url id</span>
+            <span class="k">for</span> <span class="n">hcd__url_re</span> <span class="ow">in</span> <span class="n">hcd__url_re_list</span><span class="p">:</span>
+                <span class="n">url_id</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">for</span> <span class="n">i4</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">hcd__url_re</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">hcd__url_re</span><span class="p">)</span> <span class="o">-</span> <span class="n">i4</span><span class="p">:]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="n">url_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hcd__url_re</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">hcd__url_re</span><span class="p">)</span> <span class="o">-</span> <span class="n">i4</span><span class="p">:])</span>
+                        <span class="k">break</span>
+                <span class="c1"># get year</span>
+                <span class="n">th_position</span> <span class="o">=</span> <span class="n">hcd__url_re</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;th&quot;</span><span class="p">)</span>
+                <span class="n">year</span> <span class="o">=</span> <span class="n">hcd__url_re</span><span class="p">[</span><span class="n">th_position</span> <span class="o">+</span> <span class="mi">3</span><span class="p">:</span><span class="n">th_position</span> <span class="o">+</span> <span class="mi">7</span><span class="p">]</span>
+                <span class="c1"># get tile number</span>
+                <span class="n">_32_position</span> <span class="o">=</span> <span class="n">hcd__url_re</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;_32_&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">_32_position</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="n">tile_number</span> <span class="o">=</span> <span class="n">hcd__url_re</span><span class="p">[</span><span class="n">_32_position</span> <span class="o">+</span> <span class="mi">4</span><span class="p">:</span><span class="n">_32_position</span> <span class="o">+</span> <span class="mi">12</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_32_position</span> <span class="o">=</span> <span class="n">hcd__url_re</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;_32&quot;</span><span class="p">)</span>
+                    <span class="n">tile_number</span> <span class="o">=</span> <span class="n">hcd__url_re</span><span class="p">[</span><span class="n">_32_position</span> <span class="o">+</span> <span class="mi">3</span><span class="p">:</span><span class="n">_32_position</span> <span class="o">+</span> <span class="mi">11</span><span class="p">]</span>
+                <span class="c1"># sort out some data that is not relevant</span>
+                <span class="k">if</span> <span class="n">tile_number</span> <span class="o">==</span> <span class="s2">&quot;tachment&quot;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="c1"># append url ids an so on to the appropriate list</span>
+                <span class="n">url_id_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url_id</span><span class="p">)</span>
+                <span class="n">year_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+                <span class="n">tile_number_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tile_number</span><span class="p">)</span>
+            <span class="c1"># create df with the url id, year and tile number as columns</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;url_id&quot;</span><span class="p">:</span> <span class="n">url_id_list</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="n">year_list</span><span class="p">,</span> <span class="s2">&quot;tile_number&quot;</span><span class="p">:</span> <span class="n">tile_number_list</span><span class="p">}</span>
+            <span class="n">url_id_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="c1"># set name for the csv file</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i1</span><span class="o">+</span><span class="n">number_of_requests</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_url_id_file.csv&quot;</span>
+            <span class="c1"># export df as csv</span>
+            <span class="n">url_id_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">out_path</span><span class="o">+</span><span class="n">name</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># if url(KeyError) list is not empty export a csv data with the &quot;error&quot; urls</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">url_key_error_re_list</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">error_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;error_urls&quot;</span><span class="p">:</span> <span class="n">url_key_error_re_list</span><span class="p">}</span>
+            <span class="n">error_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">error_data</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i1</span><span class="o">+</span><span class="n">number_of_requests</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_url_KeyError.csv&quot;</span>
+            <span class="n">error_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">out_path</span><span class="o">+</span><span class="n">name</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="c1"># create list for the filenames</span>
+    <span class="n">filenames_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="c1"># loop through files in the out_path directory</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">scandir</span><span class="p">(</span><span class="n">out_path</span><span class="p">):</span>
+        <span class="c1"># convert to string cause argument of type &#39;nt.DirEntry&#39; is not iterable</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="c1"># check if the file is relevant</span>
+        <span class="k">if</span> <span class="s2">&quot;KeyError&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filename</span> <span class="ow">and</span> <span class="s2">&quot;url_id_file&quot;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="c1"># add filename to filename list</span>
+            <span class="n">filenames_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">11</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># combine the content of all the files</span>
+        <span class="n">combined_content</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">out_path</span><span class="o">+</span><span class="n">filename</span><span class="p">)</span> <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames_list</span><span class="p">])</span>
+        <span class="c1"># create a csv file with the combined content</span>
+        <span class="n">path_name</span> <span class="o">=</span> <span class="n">out_path</span><span class="o">+</span><span class="s2">&quot;url_id_file.csv&quot;</span>
+        <span class="n">combined_content</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path_name</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">path_name</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are no objects to concatenate. Probably there are no relevant files.&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Fabian Schreiter and Jonathan Frank.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
