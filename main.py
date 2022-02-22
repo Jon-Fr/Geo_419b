@@ -12,7 +12,7 @@ def set_elev_variables(year):
     Sets some variables that change depending on the specified year and returns them. However, if it is certain that
     there is no data for the specified year "stop" is returned.
 
-    Parameter
+    Parameters
     ----------
     year: int
         The year of interest or one of the years ot interest.
@@ -54,7 +54,7 @@ def data_download(type_to_download, data_list_to_download, url_year="", year=0, 
     name(s) of the downloaded file(s) is returned, if no files were downloaded "no_new_data" is returned.
     Files are only downloaded, if the file or the content of the file is not already in the working directory.
 
-    Parameter
+    Parameters
     ----------
     type_to_download: str
         The type of the data to be downloaded.
@@ -181,7 +181,7 @@ def create_and_unzip(folder_path, zip_files):
     Creates a folder (if it is not already existing) and unzip a list of ZIP files into it.
     Before the function tries to unpacks a file, it checks whether this file actually exists in the working directory.
 
-    Parameter
+    Parameters
     ----------
     folder_path: str
         Path to / name of the folder to create.
@@ -212,7 +212,7 @@ def intersect_geodfs(geodf_1, geodf_2):
     Intersects two geodataframes and returns the intersected geodataframe. If the coordinate reference system (crs) of
     the geodataframes is different the first geodataframe is re-projected to the crs of the second geodataframe.
 
-    Parameter
+    Parameters
     ----------
     geodf_1: geopandas.geodataframe.GeoDataFrame
         geodataframe 1
@@ -240,7 +240,7 @@ def create_elev_download_list(elev_aoi, year, start_year, end_year, month_start_
     Creates a list that contains the part of the URL that is different for each data tile for all data tiles to be
     downloaded and returns that list. If there is no data for the specified year, stop is returned.
 
-    Parameter
+    Parameters
     ----------
     elev_aoi: geopandas.geodataframe.GeoDataFrame
         The Intersected geodataframe of the area of interest and the metadata geodataframe.
@@ -302,7 +302,7 @@ def delete_zip_files(zip_files):
     Deletes one or more ZIP files. Before the function tries to delete a file, it checks whether
     this file actually exists in the working directory.
 
-    Parameter
+    Parameters
     ----------
     zip_files: list of str
         A list containing the names of the ZIP files to be deleted.
@@ -322,7 +322,7 @@ def c_tile_number_df(geodf):
     """
     Creates and returns a dataframe that contains the tile numbers of a geodataframe.
 
-    Parameter
+    Parameters
     ----------
     geodf: geopandas.geodataframe.GeoDataFrame
         The Intersected geodataframe of the area of interest and the tile number geodataframe.
@@ -347,13 +347,14 @@ def split_df(df):
     """
     Splits a dataframe into two (based on the year) and returns a list that contains the two new dataframes.
 
-    Parameter
+    Parameters
     ----------
     df: pandas.core.frame.DataFrame
         The dataframe to be split.
+
     Returns
     -------
-    list_
+    list_1: list of pandas.core.frame.DataFrames
         A list containing the new dataframes.
     """
     list_ = list()
@@ -372,7 +373,7 @@ def get_relevant_url_ids(url_id_df, tile_number_df, start_year, end_year):
     where orthophotos are available only for a part of the area of interest. To accomplish this, several dataframe
     operations are performed.
 
-    Parameter
+    Parameters
     ----------
     url_id_df: pandas.core.frame.DataFrame
         Dataframe with the the ID part of all URLs, the years and the tile numbers as columns.
@@ -456,8 +457,8 @@ class GeoFileHandler:
     """
     class to represent a folder with geo-files
 
-    Attributes:
-    -------
+    Attributes
+    ----------
     path: str
         path of the directory which contains the folder
     folder_name: str
@@ -470,10 +471,6 @@ class GeoFileHandler:
         its needed gdal.BuildVRT() in method create_vrt
     extension: array of int
         array with [minX, minY, maxX, maxY] for all files
-    Methods
-    -------
-    create_vrt ( name, epsg="EPSG: 25832")
-        creates a raster-mosaic using gdal.BuildVRT and export as GeoTiff in choosable crs
     """
     def __init__(self, path, folder_name, geo_file_list):
         """
@@ -513,7 +510,7 @@ class GeoFileHandler:
         """
         creates a raster-mosaic using gdal.BuildVRT and export as GeoTiff in choosable crs
 
-        Parameter
+        Parameters
         ----------
         name: str
             name of the GeoTiff
@@ -539,7 +536,7 @@ def go_through_all_raster(dir, ending, file_cor=None):
     or create_geo_file_dic (no file_cor given) to get the a dictionary with file end extent. For each subfolder
     an instance of the class GeoFileHandler is created. All Objects of GeoFileHandler are returned as a list.
 
-    Parameter
+    Parameters
     ----------
     dir: str
         directory with subfolders, witch contains all raster datasets
@@ -575,7 +572,7 @@ def create_geo_file_dic(dir, file):
     """
     calculate the geometric extension of a raster
 
-    Parameter
+    Parameters
     ----------
     dir: str
         directory
@@ -603,7 +600,7 @@ def raster_correction(dir, file_raster, file_cor, ending, epsg="EPSG: 25832"):
     corrects every raster value by addition with a second raster (correction file).
     Writes the result as a new GeoTiff by replacing the original file extension with _UTM_cor.tif
 
-    Parameter
+    Parameters
     ----------
     dir: str
         directory
@@ -661,12 +658,12 @@ def auto_download(working_dir, path_shp, start_year_elev=None, month_start_year=
                   ortho=True, file_cor_dgm=None, epsg_mosaic="EPSG: 25832", merge_dgm=True, merge_dom=True,
                   merge_ortho=True, delete=True,):
     """
-    The main function of the script, through the parameters of this function one can control the download of the
+    The main function of the script, through the Parameters of this function one can control the download of the
     elevation data and orthophoto as well as the further processing of them (height correction and merging).
-    Depending on the parameters, the other functions of the script are called within this function to download the data
+    Depending on the Parameters, the other functions of the script are called within this function to download the data
     and perform the processing.
 
-    Parameter
+    Parameters
     ----------
     working_dir: str
         Path to the directory where the output is to be stored.
@@ -676,7 +673,7 @@ def auto_download(working_dir, path_shp, start_year_elev=None, month_start_year=
         first year of interest for the elevation data
     month_start_year: int, default=1
         first month of interest for the elevation data
-    end_yea_elev: int or None, default=None
+    end_year_elev: int or None, default=None
         last year of interest for the elevation data
     month_end_year: int, default=12
         last month of interest for the elevation data

@@ -9,9 +9,9 @@ from tqdm import tqdm
 async def get_hcd(session, url):
     """
     The function requests the head content disposition from an URL and returns it together with the URL if an key error
-     occurs only the url is returned.
+    occurs only the url is returned.
 
-    Parameter
+    Parameters
     ----------
     session: aiohttp.client.ClientSession
         the client session
@@ -44,14 +44,14 @@ async def framework_requests(start=0, stop=0, list_of_ids=None):
     In this function first the framework for the request function is set. Then the request function is called repeatedly
     to get the head content dispositions of the URLs.
 
-    Parameter
+    Parameters
     ----------
     start: int
         The number of the id part of the first URL to be checked.
     stop: int
         The number of the id part of the last URL to be checked.
     list_of_ids: list of str or None
-        This parameter should not be changed. It only plays a role in the additional checking of the key error URLs.
+        This Parameter should not be changed. It only plays a role in the additional checking of the key error URLs.
 
     Returns
     -------
@@ -103,7 +103,7 @@ def create_url_id_file(start, stop, out_path, number_of_requests=100):
     the head content dispositions or in case of a key error the URL. Then the information is filtered and the CSV files
     are generated. Finally, the content of all non-key error CSV files is merged into one file.
 
-    Parameter
+    Parameters
     ----------
     start: int
         The number of the id part of the first URL to be checked.
