@@ -8,8 +8,8 @@ Welcome to Geo_419b's documentation!
 
 .. toctree::
 
-	main
-	_aux
+	Geo_419b
+	
 
 Indices and tables
 ==================
