@@ -354,7 +354,7 @@ def split_df(df):
 
     Returns
     -------
-    list_1: list of pandas.core.frame.DataFrames
+    list_: list of pandas.core.frame.DataFrames
         A list containing the new dataframes.
     """
     list_ = list()
@@ -658,9 +658,9 @@ def auto_download(working_dir, path_shp, start_year_elev=None, month_start_year=
                   ortho=True, file_cor_dgm=None, epsg_mosaic="EPSG: 25832", merge_dgm=True, merge_dom=True,
                   merge_ortho=True, delete=True,):
     """
-    The main function of the script, through the Parameters of this function one can control the download of the
+    The main function of the script, through the parameters of this function one can control the download of the
     elevation data and orthophoto as well as the further processing of them (height correction and merging).
-    Depending on the Parameters, the other functions of the script are called within this function to download the data
+    Depending on the parameters, the other functions of the script are called within this function to download the data
     and perform the processing.
 
     Parameters
