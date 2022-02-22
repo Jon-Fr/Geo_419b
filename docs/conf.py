@@ -96,7 +96,6 @@ html_theme = 'sphinx_rtd_theme'
 
 html_use_index = True
 
-html_static_path = ['_static']
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
