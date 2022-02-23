@@ -1,4 +1,4 @@
-name: 419b_Python_3_8_test
+name: Geo_419b
 channels:
   - defaults
 dependencies:
