@@ -32,7 +32,7 @@ release = "1.0.0"
 # -- General configuration ---------------------------------------------------
 autodoc_mock_imports = ["osgeo", "pandas", "geopandas", "request", "aiohttp", "tqdm"]
 
-needs_sphinx >= "4.4.0"
+needs_sphinx == "4.4.0"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
