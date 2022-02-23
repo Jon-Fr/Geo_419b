@@ -29,7 +29,7 @@ setup(name="Geo_419b",
       setup_requires=[""],
       install_requires=requires,
       extras_require={
-          "docs": ["sphinx>=4.0"],
+          "docs": ["sphinx==4.4.0"],
       },
       classifiers=[
           "Programming Language :: Python",
