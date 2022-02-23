@@ -3,6 +3,7 @@ This program is intended for the automatic download of elevation data and orthop
 
 ## Installation
 The following section describes the installation of the program. Firstly, in case [Anaconda][2] is used and secondly, if it is not.
+Regardless of the method chosen, osgeo/gdal must be installed manually.
 
 #### With Anaconda
 If you use anaconda you can use the enviroment.yml file to set up an environment in which the main and aux script can be used. 
