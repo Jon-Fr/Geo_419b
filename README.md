@@ -19,7 +19,7 @@ If you want to change the name of the environment, you must do so in the environ
 
 Additional information about setting up environments using environment.yml files can be found [here][3].
 
-After you have set up the environment like this, it should be possible to use the main and aux script within it without any further action.
+After you have set up the environment like this and installed osgeo/gdal it should be possible to use the main and aux script within it without any further action.
 
 #### Without Anaconda
 If you do not use Anaconda, you will have to manually install the packages that are imported at the beginning of the main and aux script.
