@@ -48,7 +48,7 @@ def set_elev_variables(year):
 
 
 def data_download(type_to_download, data_list_to_download, url_year="", year=0, dem_n="", year_list=None,
-                  tile_number_list=None):
+                  tile_number_list=None,  additional_check_2019=False):
     """
     Loops trough a list of data to download puts the URL(s) together and download the ZIP file(s). A list with the
     name(s) of the downloaded file(s) is returned, if no files were downloaded "no_new_data" is returned.
@@ -71,7 +71,8 @@ def data_download(type_to_download, data_list_to_download, url_year="", year=0, 
         A list which contains the year of capture of each orthophoto to be downloaded.
     tile_number_list: list of str or None, default=None
          A list which contains the tile number of each orthophoto to be downloaded.
-
+    additional_check_2019: bool, default=False
+        Information on if this is an additional check for 2019 or not.
     Returns
     -------
     zip_data_list: list of str
@@ -116,21 +117,21 @@ def data_download(type_to_download, data_list_to_download, url_year="", year=0, 
                 .format(url_year, dem_n, i, url_year)
             data_kind = "dgm_"
             file_name = url[len(url) - 32:len(url) - 3] + "xyz"
-            if year == 2020:
+            if year >= 2020 or additional_check_2019 is True:
                 file_name = url[len(url) - 35:len(url) - 3] + "xyz"
         if type_to_download == "dom":
             url = """http://geoportal.geoportal-th.de/hoehendaten/DOM/dom_{}/dom{}_{}_1_th_{}.zip""" \
                 .format(url_year, dem_n, i, url_year)
             data_kind = "dom_"
             file_name = url[len(url) - 32:len(url) - 3] + "xyz"
-            if year == 2020:
+            if year >= 2020 or additional_check_2019 is True:
                 file_name = url[len(url) - 35:len(url) - 3] + "xyz"
         if type_to_download == "las":
             url = """http://geoportal.geoportal-th.de/hoehendaten/LAS/las_{}/las_{}_1_th_{}.zip""" \
                 .format(url_year, i, url_year)
             data_kind = "las_"
             file_name = url[len(url) - 32:len(url) - 3] + "laz"
-            if year == 2020:
+            if year >= 2020 or additional_check_2019 is True:
                 file_name = url[len(url) - 35:len(url) - 3] + "laz"
         if type_to_download == "ortho":
             data_year = ""
@@ -724,6 +725,7 @@ def auto_download(working_dir, path_shp, start_year_elev=None, month_start_year=
         length_of_download_list = 0
         no_data_av = "?"
         partly_data_av = "?"
+        additional_check_2019 = False
         # loop to cover each year
         year = start_year_elev
         while year <= end_year_elev:
@@ -759,6 +761,8 @@ def auto_download(working_dir, path_shp, start_year_elev=None, month_start_year=
                     elev_meta_data_aoi = intersect_geodfs(geodf_1=aoi, geodf_2=elev_meta_data_geodf)
                     # changes because of additional check
                     if additional_check == 2013 or additional_check == 2019:
+                        if additional_check == 2019:
+                            additional_check_2019 = True
                         year = year - 1
                         additional_check = "check"
                         end_year_elev = end_year_elev - 1
@@ -804,6 +808,7 @@ def auto_download(working_dir, path_shp, start_year_elev=None, month_start_year=
                             no_data_av = "probably"
                         # adjustments due to the additional check
                         if additional_check == "check":
+                            additional_check_2019 = False
                             no_data_av = "?"
                             additional_check = "false"
                         if additional_check == 2014:
@@ -828,20 +833,23 @@ def auto_download(working_dir, path_shp, start_year_elev=None, month_start_year=
                     # if data was downloaded add the zip names to the list of zip files that are to delete
                     if dgm is True and len(elev_download_list) != 0:
                         elev_data_list = data_download(type_to_download="dgm", url_year=url_year, year=year,
-                                                       data_list_to_download=elev_download_list, dem_n=dem_n)
+                                                       data_list_to_download=elev_download_list, dem_n=dem_n,
+                                                       additional_check_2019=additional_check_2019)
                         if elev_data_list != "no_new_data":
                             create_and_unzip(folder_path="elevation_data/dgm/" + str(year), zip_files=elev_data_list)
                             zip_files_to_delete.extend(elev_data_list)
 
                     if dom is True and elev_download_list != "stop":
                         elev_data_list = data_download(type_to_download="dom", url_year=url_year, year=year,
-                                                       data_list_to_download=elev_download_list, dem_n=dem_n)
+                                                       data_list_to_download=elev_download_list, dem_n=dem_n,
+                                                       additional_check_2019=additional_check_2019)
                         if elev_data_list != "no_new_data":
                             create_and_unzip(folder_path="elevation_data/dom/" + str(year), zip_files=elev_data_list)
                             zip_files_to_delete.extend(elev_data_list)
                     if las is True and len(elev_download_list) != 0:
                         elev_data_list = data_download(type_to_download="las", url_year=url_year, year=year,
-                                                       data_list_to_download=elev_download_list, dem_n=dem_n)
+                                                       data_list_to_download=elev_download_list, dem_n=dem_n,
+                                                       additional_check_2019=additional_check_2019)
                         if elev_data_list != "no_new_data":
                             create_and_unzip(folder_path="elevation_data/las/" + str(year), zip_files=elev_data_list)
                             zip_files_to_delete.extend(elev_data_list)
@@ -850,6 +858,7 @@ def auto_download(working_dir, path_shp, start_year_elev=None, month_start_year=
             if additional_check == 2014:
                 year = year - 1
             if additional_check == "check":
+                additional_check_2019 = False
                 no_data_av = "?"
                 partly_data_av = "?"
                 additional_check = "false"
