@@ -293,7 +293,7 @@ def create_elev_download_list(elev_aoi, year, start_year, end_year, month_start_
             name = i[2:len(i)]
             elev_download_list.append(name)
     else:
-        elev_download_list = list(filtered_data["NAME"])
+        elev_download_list = list(filtered_data["NAME_right"])
     # return the list of relevant tiles
     return elev_download_list
 
