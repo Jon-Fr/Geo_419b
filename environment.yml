@@ -105,7 +105,7 @@ dependencies:
   - tiledb=2.2.9=hf7ce2e6_0
   - tk=8.6.11=h2bbff1b_0
   - tornado=6.1=py38h2bbff1b_0
-  - tqdm=4.62.3=pyhd3eb1b0_1
+  - tqdm=4.66.3=pyhd3eb1b0_1
   - urllib3=1.26.6=pyhd3eb1b0_1
   - vc=14.2=h21ff451_1
   - vs2015_runtime=14.27.29016=h5e58377_2
